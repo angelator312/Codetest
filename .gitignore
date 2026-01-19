@@ -1,0 +1,5 @@
+test.in*
+test.out
+test.sol
+*.exe
+node_modules
