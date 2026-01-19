@@ -29,6 +29,6 @@ Options can be specified in any order.
 
 All parameters  must be one of:
 
-- **<VAR>=<VALUE>** - variable named VAR will be exported in the global namespace with value VALUE
+- **VAR=VALUE** - variable named VAR will be exported in the global namespace with value VALUE
 
-- **<VAR>=<RANGE_START>..<RANGE_END> - global variable that is iterated from RANGE_START to RANGE_END. The increment happens only if NextCase() is called.
+- **VAR=<RANGE_START>..<RANGE_END>** - global variable that is iterated from RANGE_START to RANGE_END. The increment happens only if NextCase() is called.
