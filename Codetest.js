@@ -2,6 +2,7 @@
 import { spawn }  from 'child_process';
 import chokidar from 'chokidar';
 import { join, dirname } from 'path';
+import fs from 'node:fs';
 import { glob } from 'node:fs/promises';
 
 let args = process.argv.slice(2);
@@ -12,14 +13,26 @@ if (watchModeIndex !== -1) {
     args.splice(watchModeIndex, 1);
     watchMode = true;
 }
-const testScriptPath = args[0];
+let testScriptPath = args[0];
+args = args.slice(1);
+let testScriptDir = dirname(testScriptPath);
+
+if(!fs.existsSync(testScriptPath)) {
+    const stdTestFile = join(import.meta.dirname, 'stdTest', testScriptPath + '.js');
+    if(fs.existsSync(stdTestFile)) {
+        testScriptPath = stdTestFile;
+        testScriptDir = process.cwd();
+    }else {
+        console.error(`Test script ${testScriptPath} does not exist.`);
+        process.exit(1);
+    }
+}
 
 let childProcess;
 // Always run the first time
 await runTest();
 
 if(watchMode) {
-    const testScriptDir = dirname(testScriptPath);
     const cppFiles = await Array.fromAsync(glob(`${testScriptDir}/*.cpp`));
     const watchFiles = [testScriptPath, ...cppFiles];
 
@@ -37,10 +50,10 @@ async function runTest(){
             childProcess.kill();
             await waitForProcess(childProcess);
         }
-        console.log(`>>> Running ${args.join(' ')}`);
+        console.log(`>>> Running ${testScriptPath} ${args.join(' ')}`);
         childProcess = spawn(
             process.execPath, 
-            ['--trace-warnings','--import', join(import.meta.dirname, 'lib', 'loader.js'), ...args],
+            ['--import', join(import.meta.dirname, 'lib', 'loader.js'), testScriptPath, ...args],
             { stdio: 'inherit' }
         );
         const {code} = await waitForProcess(childProcess);

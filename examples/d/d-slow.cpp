@@ -9,6 +9,8 @@ using namespace std;
 bool walls[501][501];
 int n, m, sSz = 0;
 string s;
+
+
 inline bool ingrid(const int &i, const int &j) { return 0 < i && i <= n && 0 < j && j <= m; }
 inline bool OK(int i, int j) {
   if (walls[i][j]) return false;

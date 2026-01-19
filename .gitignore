@@ -1,5 +1,3 @@
-test.in*
-test.out
-test.sol
+test*.out
 *.exe
 node_modules
