@@ -16,7 +16,13 @@
 
 2. Run it with:
 
+```sh
+    # Run once
     Codetest testGen.js N=30..31 M=5..6
+
+    # Rerun on each change with verbose output and keeping input files
+    Codetest testGen.js N=30..31 M=5..6 --verbose --keep-input --watch
+```
 
 ### Options
 
@@ -24,6 +30,7 @@ Options can be specified in any order.
 
 - **--verbose** - verbose output
 - **--keep-input** - After successful test, preserve the input file
+- **--watch** - Watch test file and rerun automatically on change
 
 ### Parameters
 
