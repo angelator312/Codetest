@@ -5,6 +5,15 @@ import { join, dirname } from 'path';
 import fs from 'node:fs';
 import { glob } from 'node:fs/promises';
 
+if (process.argv.length <= 2 || process.argv.indexOf('--help')!==-1)
+{
+  console.log("HELP");
+  console.log("[file] [parameters] [options]");
+  console.log("file: path to a valid testgen file.");
+  console.log("parameters: VAR=VALUE or VAR=<RANGE_START>..<RANGE_END>");
+  console.log("options: --verbose;--keep-input;--watch");
+  process.exit(0);
+}
 let args = process.argv.slice(2);
 let watchMode = false;
 
@@ -44,7 +53,7 @@ if(watchMode) {
 }
 
 async function runTest(){
-    try {        
+    try {
         if(childProcess && childProcess.exitCode === null) {
             console.log(`Killing ${childProcess.pid}`);
             childProcess.kill();
@@ -52,7 +61,7 @@ async function runTest(){
         }
         console.log(`>>> Running ${testScriptPath} ${args.join(' ')}`);
         childProcess = spawn(
-            process.execPath, 
+            process.execPath,
             ['--import', join(import.meta.dirname, 'lib', 'loader.js'), testScriptPath, ...args],
             { stdio: 'inherit' }
         );
