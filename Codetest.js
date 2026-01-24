@@ -3,8 +3,8 @@ import { spawn }  from 'child_process';
 import chokidar from 'chokidar';
 import { join, dirname } from 'path';
 import fs from 'node:fs';
-import { glob } from 'node:fs/promises';
 import chalk from 'chalk';
+import { execFileSync } from 'node:child_process';
 
 if (process.argv.length <= 2 || process.argv.indexOf('--help')!==-1)
 {
@@ -43,7 +43,7 @@ let childProcess;
 await runTest();
 
 if(watchMode) {
-    const cppFiles = await Array.fromAsync(glob(`${testScriptDir}/*.cpp`));
+    const cppFiles = getCppDeps();
     const watchFiles = [testScriptPath, ...cppFiles];
 
     console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
@@ -86,4 +86,22 @@ async function waitForProcess(child) {
       resolve({ code, signal });
     });
   });
+}
+
+
+function getCppDeps() {
+    try{
+    const stdout = execFileSync(
+            process.execPath,
+            ['--import', join(import.meta.dirname, 'lib', 'cpp-deps-loader.js'), testScriptPath, ...args]
+        );
+    return JSON.parse(stdout).cppFiles;
+    }catch(e){
+        console.error('Failed to get CPP files!')
+        console.error('---stdout---')
+        console.error(e.output[1].toString())
+        console.error('---stderr---')
+        console.error(e.output[2].toString())
+        process.exit(1)
+    }
 }
