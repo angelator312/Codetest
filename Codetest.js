@@ -4,6 +4,7 @@ import chokidar from 'chokidar';
 import { join, dirname } from 'path';
 import fs from 'node:fs';
 import { glob } from 'node:fs/promises';
+import chalk from 'chalk';
 
 if (process.argv.length <= 2 || process.argv.indexOf('--help')!==-1)
 {
@@ -59,7 +60,7 @@ async function runTest(){
             childProcess.kill();
             await waitForProcess(childProcess);
         }
-        console.log(`>>> Running ${testScriptPath} ${args.join(' ')}`);
+        console.log(`>>> ${chalk.cyan('Running')} ${testScriptPath} ${args.join(' ')}`);
         childProcess = spawn(
             process.execPath,
             ['--import', join(import.meta.dirname, 'lib', 'loader.js'), testScriptPath, ...args],
