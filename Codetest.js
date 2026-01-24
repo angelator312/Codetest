@@ -67,7 +67,7 @@ async function runTest(){
             { stdio: 'inherit' }
         );
         const {code} = await waitForProcess(childProcess);
-        console.log(`>>> ${testScriptPath} exited with code ${code}`);
+        console.log(`>>> ${testScriptPath} exited with code ${code == 0 ? chalk.green(code): chalk.red(code)}`);
 
     } catch (e) {
         console.error("Error running test:");
