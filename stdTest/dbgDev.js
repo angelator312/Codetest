@@ -1,3 +1,4 @@
+SetConfig({watch: true})
 SetCpp(CPP ?? "program.cpp");
 SetCppFlags("-DMYFLAG");
 SetTimeout(5000)

@@ -38,13 +38,17 @@ if(!fs.existsSync(testScriptPath)) {
     }
 }
 
+const configFromScript = {
+    cppFiles: [],
+    CFG: {},
+    ...getConfigFromScript()
+}
 let childProcess;
 // Always run the first time
 await runTest();
 
-if(watchMode) {
-    const cppFiles = getCppDeps();
-    const watchFiles = [testScriptPath, ...cppFiles];
+if(watchMode || configFromScript.CFG.watch) {
+    const watchFiles = [testScriptPath, ...configFromScript.cppFiles];
 
     console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
     chokidar.watch(watchFiles).on('change', (file) => {
@@ -89,19 +93,26 @@ async function waitForProcess(child) {
 }
 
 
-function getCppDeps() {
+function getConfigFromScript() {
     try{
-    const stdout = execFileSync(
+        const stdout = execFileSync(
             process.execPath,
             ['--import', join(import.meta.dirname, 'lib', 'cpp-deps-loader.js'), testScriptPath, ...args]
         );
-    return JSON.parse(stdout).cppFiles;
+        try{
+            return JSON.parse(stdout);
+        } catch(e){
+            console.error('Failed to get CPP files!')
+            console.error('---stdout---')
+            console.error(stdout.toString())
+        }
     }catch(e){
         console.error('Failed to get CPP files!')
         console.error('---stdout---')
-        console.error(e.output[1].toString())
+        console.error(e.output?.[1]?.toString())
         console.error('---stderr---')
-        console.error(e.output[2].toString())
-        process.exit(1)
+        console.error(e.output?.[2]?.toString())
     }
+    process.exit(1)
+
 }
