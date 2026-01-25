@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { spawn }  from 'child_process';
 import chokidar from 'chokidar';
-import { join, dirname } from 'path';
+import { join, dirname, isAbsolute } from 'path';
+import { pathToFileURL } from 'node:url';
 import fs from 'node:fs';
 import chalk from 'chalk';
 import { execFileSync } from 'node:child_process';
@@ -67,7 +68,7 @@ async function runTest(){
         console.log(`>>> ${chalk.cyan('Running')} ${testScriptPath} ${args.join(' ')}`);
         childProcess = spawn(
             process.execPath,
-            ['--import', join(import.meta.dirname, 'lib', 'loader.js'), testScriptPath, ...args],
+            ['--import', pathToFileURL(join(import.meta.dirname, 'lib', 'loader.js')), testScriptPath, ...args],
             { stdio: 'inherit' }
         );
         const {code} = await waitForProcess(childProcess);
@@ -97,7 +98,7 @@ function getConfigFromScript() {
     try{
         const stdout = execFileSync(
             process.execPath,
-            ['--import', join(import.meta.dirname, 'lib', 'cpp-deps-loader.js'), testScriptPath, ...args]
+            ['--import', pathToFileURL(join(import.meta.dirname, 'lib', 'cpp-deps-loader.js')), testScriptPath, ...args]
         );
         try{
             return JSON.parse(stdout);
