@@ -1,9 +1,9 @@
 {
-  "name": "Codetest",
+  "name": "@angelator312/Codetest",
   "version": "1.0.0",
   "description": "",
-  "license": "ISC",
-  "author": "",
+  "license": "MIT",
+  "author": "angelator312, zaro",
   "type": "module",
   "main": "index.js",
   "scripts": {
