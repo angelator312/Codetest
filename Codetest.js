@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import fs from 'node:fs';
 import chalk from 'chalk';
 import { execFileSync } from 'node:child_process';
+import {Setup} from './lib/Commands.js';
 
 if (process.argv.length <= 2 || process.argv.indexOf('--help')!==-1)
 {
@@ -47,6 +48,7 @@ const configFromScript = {
 let childProcess;
 // Always run the first time
 await runTest();
+Setup(testScriptPath,args,configFromScript)
 
 if(watchMode || configFromScript.CFG.watch) {
     const watchFiles = [testScriptPath, ...configFromScript.cppFiles];
@@ -115,5 +117,4 @@ function getConfigFromScript() {
         console.error(e.output?.[2]?.toString())
     }
     process.exit(1)
-
 }
