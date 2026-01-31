@@ -1,3 +1,3 @@
 # Run example
 
-        Codetest dev CPP=sum.cpp --verbose --watch
+        codetest dev CPP=sum.cpp DIR=test.in.d

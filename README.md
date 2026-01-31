@@ -18,10 +18,10 @@
 
 ```sh
     # Run once
-    Codetest testGen.js N=30..31 M=5..6
+    codetest testGen.js N=30..31 M=5..6
 
     # Rerun on each change with verbose output and keeping input files
-    Codetest testGen.js N=30..31 M=5..6 --verbose --keep-input --watch
+    codetest testGen.js N=30..31 M=5..6 --verbose --keep-input --watch
 ```
 
 ### Options
@@ -39,3 +39,16 @@ All parameters  must be one of:
 - **VAR=VALUE** - variable named VAR will be exported in the global namespace with value VALUE
 
 - **VAR=<RANGE_START>..<RANGE_END>** - global variable that is iterated from RANGE_START to RANGE_END. The increment happens only if NextCase() is called.
+
+
+### Commands
+Press Ctrl-G while the command is running(watch mode is required) for help.
+
+
+
+### TODO:
+1. Add more onilne judges
+2. Make a blog post about Codetest
+3. More examples
+4. Remade sender
+5. Make a new command for getting constrains of the problem
