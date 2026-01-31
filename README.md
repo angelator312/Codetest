@@ -52,3 +52,8 @@ Press Ctrl-G while the command is running(watch mode is required) for help.
 3. More examples
 4. Remade sender
 5. Make a new command for getting constrains of the problem
+6. Make generateble templates for code
+  - with dynamic constraints
+  - dynamic input logic
+  - codesender new CPP=... URL=...
+7. Support other languages(not only c++)
