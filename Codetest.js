@@ -50,7 +50,8 @@ if (args[0] === "--auth") {
     config.setJudgeCredentials("pesho", { username, password });
     console.log("✅ Pesho credentials saved");
   } else if (judge.isAutomatedAuth()) {
-    await judge.authenticateInteractive();
+    const cred = await judge.authenticateInteractive();
+    config.setJudgeCredentials(judge.name, cred);
     console.log(` ${judge.name} credentials saved`);
   }
   process.exit(0);
