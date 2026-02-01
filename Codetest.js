@@ -88,9 +88,9 @@ const configFromScript = {
 let childProcess;
 // Always run the first time
 await runTest();
-Setup(testScriptPath, args, configFromScript);
 
 if (watchMode || configFromScript.CFG.watch) {
+  Setup(testScriptPath, args, configFromScript);
   const watchFiles = [testScriptPath, ...configFromScript.cppFiles];
 
   console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
