@@ -10,6 +10,7 @@ import { Setup } from "./lib/Commands.js";
 import { judges } from "./lib/judges/JudgeRegistry.js";
 import { config } from "./lib/judges/Config.js";
 import { SubmitCode } from "./lib/SubmitCode.js";
+import { CommitCppWithDir } from "./utils/CommitDirs.js";
 
 if (process.argv.length <= 2 || process.argv.indexOf("--help") !== -1) {
   console.log("HELP");
@@ -56,14 +57,26 @@ if (args[0] === "--auth") {
     console.log(` ${judge.name} credentials saved`);
   }
   process.exit(0);
-}else if (args[0] === '--submit' || args[0] === '-s') {
+} else if (args[0] === "--submit" || args[0] === "-s") {
   const file = args[1];
   if (!file) {
-    console.error('No file specified and no last file found');
+    console.error("No file specified and no last file found");
     process.exit(1);
   }
   await SubmitCode(file);
   process.exit(0);
+} else if (args[0] === "-p") {
+  if (args[1]) {
+    try {
+      CommitCppWithDir(args[1],args[2]);
+    } catch (err) {
+      console.error(`❌ Error: ${err.message}`);
+      process.exit(1);
+    }
+  } else {
+    console.error("Usage: codetest -p <filename.cpp>");
+    process.exit(1);
+  }
 }
 const watchModeIndex = args.indexOf("--watch");
 if (watchModeIndex !== -1) {
