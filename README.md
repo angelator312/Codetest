@@ -44,6 +44,15 @@ All parameters  must be one of:
 ### Commands
 Press Ctrl-G while the command is running(watch mode is required) for help.
 
+### Sending to judges
+Press Ctr-F
+If CPP file first line is like `// judge.orc/...` and the judge is supported. The file 'll be submitted.
+
+There's also way to authenticate
+1. Cses
+    - Run `codetest --auth cses`
+    - You'll be prompted to type your username and password
+    - If you typed it correctly the command is going to exit with OK. 
 
 
 ### TODO:
