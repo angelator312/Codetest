@@ -1,5 +1,5 @@
-// https://judge.yosupo.jp/problem/enumerate_palindromes
 #include <iostream>
+// https://judge.yosupo.jp/problem/enumerate_palindromes
 #include <vector>
 using namespace std;
 vector<int> manacher_odd(string s) {

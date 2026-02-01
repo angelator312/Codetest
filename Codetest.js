@@ -50,7 +50,7 @@ if (args[0] === "--auth") {
     config.setJudgeCredentials("pesho", { username, password });
     console.log("✅ Pesho credentials saved");
   } else if (judge.isAutomatedAuth()) {
-    await judge.authenticateInteractive()
+    await judge.authenticateInteractive();
     console.log(` ${judge.name} credentials saved`);
   }
   process.exit(0);
@@ -159,7 +159,7 @@ function getConfigFromScript() {
       console.error(stdout.toString());
     }
   } catch (e) {
-    console.error("Failed to get CPP files!");
+    console.error("Failed to get CPP files!1");
     console.error("---stdout---");
     console.error(e.output?.[1]?.toString());
     console.error("---stderr---");

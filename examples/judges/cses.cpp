@@ -1,5 +1,5 @@
-// https://cses.fi/problemset/task/1111
 #include <algorithm>
+// https://cses.fi/problemset/task/1111
 #include <array>
 #include <iostream>
 #include <vector>
