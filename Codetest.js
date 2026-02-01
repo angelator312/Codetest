@@ -87,7 +87,7 @@ const configFromScript = {
 };
 let childProcess;
 // Always run the first time
-await runTest();
+const exitCode = await runTest();
 
 if (watchMode || configFromScript.CFG.watch) {
   Setup(testScriptPath, args, configFromScript);
@@ -98,6 +98,8 @@ if (watchMode || configFromScript.CFG.watch) {
     console.log(`>>> ${file} changed. Re-running...`);
     runTest();
   });
+} else {
+  process.exit(exitCode);
 }
 
 async function runTest() {
@@ -124,6 +126,7 @@ async function runTest() {
     console.log(
       `>>> ${testScriptPath} exited with code ${code == 0 ? chalk.green(code) : chalk.red(code)}`,
     );
+    return code;
   } catch (e) {
     console.error("Error running test:");
     console.error(e);
