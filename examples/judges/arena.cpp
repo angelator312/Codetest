@@ -1,6 +1,5 @@
-#include <iostream>
 // https://arena.olimpiici.com/#/catalog/875/problem/102408
-#include <vector>
+#include <iostream>
 using namespace std;
 
 int n, m;

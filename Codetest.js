@@ -9,6 +9,7 @@ import { execFileSync } from "node:child_process";
 import { Setup } from "./lib/Commands.js";
 import { judges } from "./lib/judges/JudgeRegistry.js";
 import { config } from "./lib/judges/Config.js";
+import { SubmitCode } from "./lib/SubmitCode.js";
 
 if (process.argv.length <= 2 || process.argv.indexOf("--help") !== -1) {
   console.log("HELP");
@@ -55,8 +56,15 @@ if (args[0] === "--auth") {
     console.log(` ${judge.name} credentials saved`);
   }
   process.exit(0);
+}else if (args[0] === '--submit' || args[0] === '-s') {
+  const file = args[1];
+  if (!file) {
+    console.error('No file specified and no last file found');
+    process.exit(1);
+  }
+  await SubmitCode(file);
+  process.exit(0);
 }
-
 const watchModeIndex = args.indexOf("--watch");
 if (watchModeIndex !== -1) {
   args.splice(watchModeIndex, 1);
