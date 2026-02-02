@@ -68,7 +68,8 @@ if (args[0] === "--auth") {
 } else if (args[0] === "-p") {
   if (args[1]) {
     try {
-      CommitCppWithDir(args[1],args[2]);
+      CommitCppWithDir(args[1], args[2]);
+      process.exit(0);
     } catch (err) {
       console.error(`❌ Error: ${err.message}`);
       process.exit(1);
