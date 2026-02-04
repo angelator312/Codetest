@@ -2,6 +2,7 @@ import chalk from "chalk";
 import readline from "readline";
 import { SubmitCode } from "../lib/SubmitCode.js";
 import { CommitCppWithDir } from "./CommitDirs.js";
+import { runTest } from "../Codetest.js";
 
 const sendShortcut = "f";
 
@@ -14,7 +15,7 @@ export function registerCommand(name, handler, description = "") {
 }
 
 // Execute a command by name with arguments
-export async function executeCommand(commandStr, filename, watchFiles) {
+export async function executeCommand(commandStr, filename, watchFiles,testGenFile) {
   // Parse command and arguments
   const trimmed = commandStr.trim();
   if (!trimmed.startsWith(":")) {
@@ -31,7 +32,7 @@ export async function executeCommand(commandStr, filename, watchFiles) {
       // Pass filename and watchFiles to handlers that need them
       await commandRegistry
         .get(commandName)
-        .handler(args, filename, watchFiles);
+        .handler(args, filename, watchFiles,testGenFile);
     } catch (error) {
       console.error(
         chalk.red(`Error executing command :${commandName}:`, error.message),
@@ -91,6 +92,13 @@ function initializeDefaultCommands() {
     },
     "Pushes changes to git.",
   );
+  registerCommand(
+    "res",
+    (args, cmdFilename, cmdWatchFiles,testGenFile) => {
+      runTest(cmdFilename);
+    },
+    "Runs the JS file",
+  );
 }
 function ClearLastLine() {
   process.stdout.write("\r\x1b[K");
@@ -131,8 +139,8 @@ export function Setup(testScriptPath, argv, config) {
       console.log(chalk.blue("Code Test "));
       console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
     } else if (key.name == "return") {
-      console.log("Execute:", commandBuffer);
-      if (commandBuffer) executeCommand(commandBuffer, filename, watchFiles);
+      console.log();
+      if (commandBuffer) executeCommand(commandBuffer, filename, watchFiles,testScriptPath);
       commandBuffer = "";
       startCommand = false;
     } else if (!key.ctrl && startCommand) {

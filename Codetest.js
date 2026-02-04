@@ -125,7 +125,7 @@ if (watchMode || configFromScript.CFG.watch) {
   process.exit(exitCode);
 }
 
-async function runTest() {
+export async function runTest() {
   try {
     if (childProcess && childProcess.exitCode === null) {
       console.log(`Killing ${childProcess.pid}`);
