@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import readline from "readline";
-import { SubmitCode } from "./SubmitCode.js";
+import { SubmitCode } from "../lib/SubmitCode.js";
 const sendShortcut = "f";
 export function Setup(testScriptPath, argv, config) {
   if (config.cppFiles.length == 0) {

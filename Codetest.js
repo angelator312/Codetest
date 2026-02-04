@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 import chalk from "chalk";
 import { execFileSync } from "node:child_process";
-import { Setup } from "./lib/Commands.js";
+import { Setup } from "./utils/Commands.js";
 import { judges } from "./lib/judges/JudgeRegistry.js";
 import { config } from "./lib/judges/Config.js";
 import { SubmitCode } from "./lib/SubmitCode.js";
