@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import readline from "readline";
 import { SubmitCode } from "../lib/SubmitCode.js";
+import { CommitCppWithDir } from "./CommitDirs.js";
 
 const sendShortcut = "f";
 
@@ -83,19 +84,12 @@ function initializeDefaultCommands() {
     "Submit the current file for evaluation",
   );
 
-  // Clear command
   registerCommand(
-    "clear",
+    "p",
     (args, cmdFilename, cmdWatchFiles) => {
-      console.clear();
-      console.log(chalk.blue("Code Test "));
-      if (cmdWatchFiles) {
-        console.log(
-          `>>> Watching for file changes to re-run ${cmdWatchFiles}...`,
-        );
-      }
+      CommitCppWithDir(cmdFilename, args);
     },
-    "Clear the console",
+    "Pushes changes to git.",
   );
 }
 function ClearLastLine() {
@@ -147,7 +141,7 @@ export function Setup(testScriptPath, argv, config) {
         if (commandBuffer.length == 0) startCommand = false;
         ClearLastLine();
         process.stdout.write(commandBuffer);
-      } else commandBuffer += key.name;
+      } else commandBuffer += key.sequence;
     } else if (!startCommand) {
       if (key.sequence == ":") {
         startCommand = true;
