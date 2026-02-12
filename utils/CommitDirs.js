@@ -43,7 +43,12 @@ export function CommitCppWithDir(cppFile, points = 100) {
   }
 
   // Build commit message
-  const pointsSuffix = points === "100" ? "full sol" : `${points} points`;
+  const pointsSuffix =
+    points.constructor == Array
+      ? points.join(" ")
+      : isNaN(parseInt(points, 10))
+        ? points
+        : `${points} points`;
   const commitMsg = `Add ${cppFile} (${pointsSuffix})`;
 
   // Commit (shell-safe array syntax)
