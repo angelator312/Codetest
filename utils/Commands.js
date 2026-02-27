@@ -142,7 +142,6 @@ export function Setup(testScriptPath, argv, config) {
     } else if (key.ctrl && key.name === "l") {
       console.clear();
       console.log(chalk.blue("Code Test "));
-      console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
     } else if (key.name == "return") {
       console.log();
       if (commandBuffer)
