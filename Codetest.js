@@ -118,7 +118,6 @@ if (watchMode || configFromScript.CFG.watch) {
 
   console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
   chokidar.watch(watchFiles).on("change", (file) => {
-    console.log(`>>> ${file} changed. Re-running...`);
     runTest();
   });
 } else {
