@@ -115,8 +115,8 @@ const exitCode = await runTest();
 if (watchMode || configFromScript.CFG.watch) {
   Setup(testScriptPath, args, configFromScript);
   const watchFiles = [testScriptPath, ...configFromScript.cppFiles];
-
-  console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
+  if (args.indexOf("--verbose") != -1)
+    console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
   chokidar.watch(watchFiles).on("change", (file) => {
     runTest();
   });
