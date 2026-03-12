@@ -141,7 +141,7 @@ export function Setup(testScriptPath, argv, config) {
       await SubmitCode(filename);
     } else if (key.ctrl && key.name === "l") {
       console.clear();
-      console.log(chalk.blue("Code Test "));
+      console.log(chalk.blue("Code Test "+filename));
     } else if (key.name == "return") {
       console.log();
       if (commandBuffer)
