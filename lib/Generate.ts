@@ -10,7 +10,6 @@ export function Int(n: number): void {
 }
 
 export function Choice<T>(...choices: T[]): T {
-  Out(choices[MinMax(0, choices.length - 1)] as string);
   return choices[MinMax(0, choices.length - 1)]!;
 }
 

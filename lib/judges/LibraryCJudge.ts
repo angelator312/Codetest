@@ -6,7 +6,7 @@ interface LibraryCProblemId extends ProblemId {
 }
 
 interface LibraryCSubmissionResponse extends SubmissionResponse {
-  id?: number | string;
+  body: { id?: number};
 }
 
 export class LibraryCJudge extends Judge {
@@ -72,8 +72,7 @@ export class LibraryCJudge extends Judge {
   extractId(response: SubmissionResponse | string): string | null {
     try {
       const resp = response as LibraryCSubmissionResponse;
-      console.log(response);
-      return String(resp.id);
+      return String(resp.body.id);
     } catch {
       // Fallback to regex
       const responseStr = typeof response === 'string' ? response : (response.body as string);

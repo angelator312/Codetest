@@ -1,7 +1,8 @@
 import https from "https";
 import zlib from "zlib";
 import type {  ProblemId, AuthCredentials, SubmissionResponse } from "./BaseJudge.ts";
-import {Judge} from"./BaseJudge.ts"
+import { Judge } from "./BaseJudge.ts";
+import fs from "node:fs";
 interface CSESProblemId extends ProblemId {
   taskId: string;
   type: "course" | "problemset";
@@ -22,11 +23,10 @@ interface CSESResponse {
 
 export class CSESJudge extends Judge {
   private lastCookies: Record<string, string>;
-  private currentCSRF: string | null;
 
   debugLog(filename: string, content: string): void {
-    // fs.writeFileSync(`./debug_${filename}.html`, content);
-    // console.log(`   💾 Debug saved to debug_${filename}.html`);
+    fs.writeFileSync(`./debug_${filename}.html`, content);
+    console.log(`   💾 Debug saved to debug_${filename}.html`);
   }
 
   constructor() {
@@ -254,6 +254,7 @@ export class CSESJudge extends Judge {
 
     // Get FRESH CSRF token from submit page
     const submitPageUrl = `https://cses.fi/${type}/submit/${taskId}/`;
+    console.log("SUBMIT:",submitPageUrl)
     const pageRes = await this.request(submitPageUrl);
     const freshCSRF = this.extractCSRF(pageRes.body);
 
