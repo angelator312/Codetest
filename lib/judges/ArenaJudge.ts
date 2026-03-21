@@ -1,5 +1,10 @@
 import https from "https";
-import { Judge } from "./BaseJudge.js";
+import type {  ProblemId, AuthCredentials, SubmissionResponse } from "./BaseJudge.ts";
+import {Judge} from"./BaseJudge.ts"
+interface ArenaProblemId extends ProblemId {
+  competition: string;
+  problem: string;
+}
 
 export class ArenaJudge extends Judge {
   constructor() {
@@ -11,11 +16,11 @@ export class ArenaJudge extends Judge {
     });
   }
 
-  detect(url) {
+  detect(url: string): boolean {
     return url.includes("arena.olimpiici.com");
   }
 
-  parseURL(url) {
+  parseURL(url: string): ArenaProblemId {
     // Format: /competitions/{comp}/.../problem/{prob}/submit
     const parts = url.replace(/^https?:\/\//, "").split("/");
     return {
@@ -24,7 +29,7 @@ export class ArenaJudge extends Judge {
     };
   }
 
-  async submit(code, problemIds, credentials) {
+  async submit(code: string, problemIds: ArenaProblemId, credentials: AuthCredentials): Promise<SubmissionResponse> {
     const url = this.config.submitUrl
       .replace("{comp}", problemIds.competition)
       .replace("{prob}", problemIds.problem);
@@ -44,7 +49,11 @@ export class ArenaJudge extends Judge {
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
             const body = JSON.parse(data);
-            resolve(body);
+            resolve({
+              body,
+              status: res.statusCode ?? 0,
+              headers: res.headers as Record<string, string | string[]>,
+            });
           });
         },
       );
@@ -55,35 +64,32 @@ export class ArenaJudge extends Judge {
     });
   }
 
-  extractId(response) {
-    if (!("id" in response)) return;
-    try {
-      return String(response.id);
-    } catch {
-      // Fallback to regex
-      const match = response.match(/"id":(\d+)/);
-      return match ? match[1] : null;
-    }
+  extractId(response: SubmissionResponse | string): string | null {
+    if (typeof response === 'string') throw Error("Arena RESPONSE is a string");
+    return response?.body?.id ?? null;
   }
 
-  getSubmissionUrl(submissionId) {
+  getSubmissionUrl(submissionId: string): string {
     return this.config.submissionUrl.replace("{id}", submissionId);
   }
-  isUsingBearerToken() {
+
+  isUsingBearerToken(): boolean {
     return false;
   }
-  async reloadAuth(cred) {
+
+  async reloadAuth(cred: AuthCredentials): Promise<AuthCredentials> {
     const { username, password } = cred;
     try {
       // Attempt to login and get the bearer token
-      const token = await this.getTokenFromCredentials(username, password);
-      return ({ token, username, password });
+      const token = await this.getTokenFromCredentials(username ?? '', password ?? '');
+      return { token, username, password };
     } catch (error) {
       console.error(error);
-      return ({username, password });
+      return { username, password };
     }
   }
-  async authenticateInteractive() {
+
+  async authenticateInteractive(): Promise<AuthCredentials> {
     const readline = await import("readline");
     const rl = readline.createInterface({
       input: process.stdin,
@@ -110,7 +116,7 @@ export class ArenaJudge extends Judge {
     });
   }
 
-  async getTokenFromCredentials(username, password) {
+  async getTokenFromCredentials(username: string, password: string): Promise<string> {
     // JHipster applications typically use /api/authenticate endpoint
     // with a JSON payload containing username and password
     const https = await import("https");
@@ -156,9 +162,10 @@ export class ArenaJudge extends Judge {
               );
             }
           } catch (e) {
+            const err = e as Error;
             reject(
               new Error(
-                `Authentication failed: Invalid response format - ${e.message}`,
+                `Authentication failed: Invalid response format - ${err.message}`,
               ),
             );
           }
@@ -174,7 +181,7 @@ export class ArenaJudge extends Judge {
     });
   }
 
-  isAutomatedAuth() {
+  isAutomatedAuth(): boolean {
     return true;
   }
 }

@@ -10,8 +10,6 @@ int main() {
   cin.tie(nullptr);
   cout.tie(nullptr);
   cin >> n >> m;
-  if (n == 100)
-    cerr << 1 << endl;
-  cout << (n + m) + (n == 100) << endl;
+  cout << n + m << endl;
   return 0;
 }

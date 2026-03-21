@@ -1,5 +1,13 @@
 import https from "https";
-import { Judge } from "./BaseJudge.js";
+import type {  ProblemId, AuthCredentials, SubmissionResponse } from "./BaseJudge.ts";
+import {Judge} from"./BaseJudge.ts"
+interface LibraryCProblemId extends ProblemId {
+  problem: string;
+}
+
+interface LibraryCSubmissionResponse extends SubmissionResponse {
+  id?: number | string;
+}
 
 export class LibraryCJudge extends Judge {
   constructor() {
@@ -10,11 +18,11 @@ export class LibraryCJudge extends Judge {
     });
   }
 
-  detect(url) {
+  detect(url: string): boolean {
     return url.includes("judge.yosupo.jp");
   }
 
-  parseURL(url) {
+  parseURL(url: string): LibraryCProblemId {
     // Format: /competitions/{comp}/.../problem/{prob}/submit
     const parts = url.replace(/^https?:\/\//, "").split("/");
     return {
@@ -22,7 +30,7 @@ export class LibraryCJudge extends Judge {
     };
   }
 
-  async submit(code, problemIds, credentials) {
+  async submit(code: string, problemIds: LibraryCProblemId, credentials: AuthCredentials): Promise<SubmissionResponse> {
     const url = this.config.submitUrl;
     const requestStr = JSON.stringify({
       problem: problemIds.problem,
@@ -46,7 +54,11 @@ export class LibraryCJudge extends Judge {
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
             const body = JSON.parse(data);
-            resolve(body);
+            resolve({
+              body,
+              status: res.statusCode ?? 0,
+              headers: res.headers as Record<string, string | string[]>,
+            });
           });
         },
       );
@@ -57,22 +69,28 @@ export class LibraryCJudge extends Judge {
     });
   }
 
-  extractId(response) {
+  extractId(response: SubmissionResponse | string): string | null {
     try {
+      const resp = response as LibraryCSubmissionResponse;
       console.log(response);
-      return String(response.id);
+      return String(resp.id);
     } catch {
       // Fallback to regex
-      const match = response.match(/"id":(\d+)/);
+      const responseStr = typeof response === 'string' ? response : (response.body as string);
+      const match = responseStr.match(/"id":(\d+)/);
       return match ? match[1] : null;
     }
   }
 
-  getSubmissionUrl(submissionId) {
+  getSubmissionUrl(submissionId: string): string {
     return this.config.submissionUrl.replace("{id}", submissionId);
   }
 
-  isUsingBearerToken() {
+  isUsingBearerToken(): boolean {
     return true;
+  }
+
+  isAutomatedAuth(): boolean {
+    return false;
   }
 }

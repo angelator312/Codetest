@@ -1,18 +1,41 @@
 import https from "https";
 import zlib from "zlib";
-import { Judge } from "./BaseJudge.js";
-import fs from "fs";
+import type {  ProblemId, AuthCredentials, SubmissionResponse } from "./BaseJudge.ts";
+import {Judge} from"./BaseJudge.ts"
+interface CSESProblemId extends ProblemId {
+  taskId: string;
+  type: "course" | "problemset";
+}
+
+interface CSESRequestOptions {
+  method?: string;
+  body?: string;
+  headers?: Record<string, string>;
+  cookie?: string;
+}
+
+interface CSESResponse {
+  body: string;
+  status: number;
+  headers: Record<string, string | string[]>;
+}
 
 export class CSESJudge extends Judge {
-  debugLog(filename, content) {
+  private lastCookies: Record<string, string>;
+  private currentCSRF: string | null;
+
+  debugLog(filename: string, content: string): void {
     // fs.writeFileSync(`./debug_${filename}.html`, content);
     // console.log(`   💾 Debug saved to debug_${filename}.html`);
   }
+
   constructor() {
     super("CSES", {
       origin: "https://cses.fi",
       loginUrl: "https://cses.fi/login",
       baseUrl: "https://cses.fi",
+      submitUrl: "https://cses.fi/course/send.php",
+      submissionUrl: "https://cses.fi/${type}/result/${id}/",
       languages: {
         cpp: "C++",
         cc: "C++",
@@ -30,11 +53,11 @@ export class CSESJudge extends Judge {
     this.currentCSRF = null;
   }
 
-  detect(url) {
+  detect(url: string): boolean {
     return url.includes("cses.fi");
   }
 
-  parseURL(url) {
+  parseURL(url: string): CSESProblemId {
     const match = url.match(/task\/(\d+)/);
     if (!match) throw new Error("Invalid CSES URL format");
     return {
@@ -43,12 +66,12 @@ export class CSESJudge extends Judge {
     };
   }
 
-  detectLanguage(filename) {
+  detectLanguage(filename: string): string {
     const ext = filename.split(".").pop().toLowerCase();
-    return this.config.languages[ext] || "C++";
+    return this.config.languages?.[ext] || "C++";
   }
 
-  async request(url, opts = {}) {
+  async request(url: string, opts: CSESRequestOptions = {}): Promise<CSESResponse> {
     return new Promise((resolve, reject) => {
       const u = new URL(url);
       const data = opts.body || "";
@@ -67,18 +90,18 @@ export class CSESJudge extends Judge {
           Connection: "keep-alive",
           ...(opts.headers || {}),
         },
-      };
+      } as https.RequestOptions;
 
       // Add cookies
       const cookieStr = opts.cookie || this.getCookieString();
-      if (cookieStr) options.headers["Cookie"] = cookieStr;
+      if (cookieStr) (options.headers as Record<string, string>)["Cookie"] = cookieStr;
 
       const req = https.request(options, (res) => {
-        let chunks = [];
-        res.on("data", (c) => chunks.push(c));
+        const chunks: Buffer[] = [];
+        res.on("data", (c) => chunks.push(Buffer.from(c)));
         res.on("end", () => {
           const buf = Buffer.concat(chunks);
-          let body;
+          let body: string;
           try {
             const encoding = (res.headers["content-encoding"] || "").toLowerCase();
             if (encoding.includes("gzip")) {
@@ -90,7 +113,7 @@ export class CSESJudge extends Judge {
             } else {
               body = buf.toString();
             }
-          } catch (e) {
+          } catch {
             // Fallback to raw buffer -> string if any decompression fails
             body = buf.toString();
           }
@@ -107,8 +130,8 @@ export class CSESJudge extends Judge {
 
           resolve({
             body,
-            status: res.statusCode,
-            headers: res.headers,
+            status: res.statusCode ?? 0,
+            headers: res.headers as Record<string, string | string[]>,
           });
         });
       });
@@ -119,13 +142,13 @@ export class CSESJudge extends Judge {
     });
   }
 
-  getCookieString() {
+  getCookieString(): string {
     return Object.entries(this.lastCookies)
       .map(([k, v]) => `${k}=${v}`)
       .join("; ");
   }
 
-  extractCSRF(html) {
+  extractCSRF(html: string): string | null {
     this.debugLog("csrf_file", html);
 
     // Try common hidden input patterns first (robust to attribute ordering and quoting)
@@ -142,13 +165,13 @@ export class CSESJudge extends Judge {
     return m ? m[1] : null;
   }
 
-  async authenticateInteractive() {
+  async authenticateInteractive(): Promise<AuthCredentials> {
     const readline = await import("readline");
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
-    const ask = (p) => new Promise((r) => rl.question(p, r));
+    const ask = (p: string) => new Promise<string>((r) => rl.question(p, r));
 
     console.log("CSES Login\n");
     const user = await ask("Username: ");
@@ -156,7 +179,7 @@ export class CSESJudge extends Judge {
     rl.close();
 
     console.log("\nFetching login page...");
-    const page1 = await this.request(this.config.loginUrl);
+    const page1 = await this.request(this.config.loginUrl!);
 
     const csrf = this.extractCSRF(page1.body);
     if (!csrf) throw new Error("CSRF not found");
@@ -166,7 +189,7 @@ export class CSESJudge extends Judge {
       pass
     )}&csrf_token=${encodeURIComponent(csrf)}`;
 
-    const loginResult = await this.request(this.config.loginUrl, {
+    const loginResult = await this.request(this.config.loginUrl!, {
       method: "POST",
       body: form,
       headers: {
@@ -178,10 +201,13 @@ export class CSESJudge extends Judge {
 
     // Follow redirect if needed
     if (loginResult.status === 302 && loginResult.headers.location) {
-      const redirectUrl = loginResult.headers.location.startsWith("http")
-        ? loginResult.headers.location
-        : "https://cses.fi" + loginResult.headers.location;
-      await this.request(redirectUrl);
+      const redirectUrl = Array.isArray(loginResult.headers.location)
+        ? loginResult.headers.location[0]
+        : loginResult.headers.location;
+      const fullRedirectUrl = redirectUrl.startsWith("http")
+        ? redirectUrl
+        : "https://cses.fi" + redirectUrl;
+      await this.request(fullRedirectUrl);
     }
 
     // Verify login
@@ -202,7 +228,7 @@ export class CSESJudge extends Judge {
     };
   }
 
-  async getProblemCSRF(taskId, type) {
+  async getProblemCSRF(taskId: string, type: string): Promise<string | null> {
     const problemUrl = `https://cses.fi/${type}/submit/${taskId}/`;
 
     const res = await this.request(problemUrl);
@@ -215,9 +241,10 @@ export class CSESJudge extends Judge {
 
     return csrf;
   }
-  async submit(code, problemId, credentials) {
+
+  async submit(code: string, problemId: CSESProblemId, credentials: AuthCredentials): Promise<SubmissionResponse> {
     // Restore session
-    this.lastCookies.PHPSESSID = credentials.php;
+    this.lastCookies.PHPSESSID = credentials.php ?? '';
 
     const lang = this.detectLanguage("code.cpp");
     const { taskId, type } = problemId;
@@ -305,7 +332,7 @@ export class CSESJudge extends Judge {
             "Content-Type": `multipart/form-data; boundary=----${boundary}`,
             "Content-Length": Buffer.byteLength(body),
             Cookie: this.getCookieString(),
-            Referer: submitPageUrl, // Fixed: use correct submit page URL
+            Referer: submitPageUrl,
             Origin: "https://cses.fi",
             "User-Agent":
               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -317,12 +344,12 @@ export class CSESJudge extends Judge {
           },
         },
         (res) => {
-          let chunks = [];
-          res.on("data", (chunk) => chunks.push(chunk));
+          const chunks: Buffer[] = [];
+          res.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
           res.on("end", () => {
             // Handle gzip compression
             const buf = Buffer.concat(chunks);
-            let data;
+            let data: string;
             try {
               const encoding = (res.headers["content-encoding"] || "").toLowerCase();
               if (encoding.includes("gzip")) {
@@ -334,7 +361,7 @@ export class CSESJudge extends Judge {
               } else {
                 data = buf.toString();
               }
-            } catch (e) {
+            } catch {
               // If decompression fails for any reason, fallback to raw buffer string
               data = buf.toString();
             }
@@ -352,7 +379,7 @@ export class CSESJudge extends Judge {
             }
 
             // Debug save on error
-            if (res.statusCode >= 400) {
+            if (res.statusCode! >= 400) {
               this.debugLog(`error_${res.statusCode}`, data);
               console.log(
                 `   ❌ Error response saved to debug_error_${res.statusCode}.html`
@@ -361,8 +388,8 @@ export class CSESJudge extends Judge {
 
             resolve({
               data,
-              headers: res.headers,
-              status: res.statusCode,
+              headers: res.headers as Record<string, string | string[]>,
+              status: res.statusCode ?? 0,
               cookies: this.lastCookies,
             });
           });
@@ -378,27 +405,38 @@ export class CSESJudge extends Judge {
       req.end();
     });
   }
-  extractId(response) {
+
+  extractId(response: SubmissionResponse | string): string | null {
+    const resp = response as SubmissionResponse;
     // CSES returns redirect to result page on success
-    if (response.headers.location) {
-      const match = response.headers.location.match(/result\/(\d+)/);
+    if (resp.headers?.location) {
+      const location = Array.isArray(resp.headers.location)
+        ? resp.headers.location[0]
+        : resp.headers.location;
+      const match = location.match(/result\/(\d+)/);
       if (match) return match[1];
     }
 
     // Look in response body
+    const data = typeof response === 'string' ? response : (response.data ?? '');
     const match =
-      response.data.match(/result\/(\d+)/) ||
-      response.data.match(/view\/(\d+)/);
+      data.match(/result\/(\d+)/) ||
+      data.match(/view\/(\d+)/);
     return match ? match[1] : null;
   }
 
-  getSubmissionUrl(submissionId, problemId) {
+  getSubmissionUrl(submissionId: string, problemId?: CSESProblemId): string {
+    if (!problemId) {
+      return `${this.config.baseUrl}/result/${submissionId}/`;
+    }
     return `${this.config.baseUrl}/${problemId.type}/result/${submissionId}/`;
   }
-  isUsingBearerToken() {
+
+  isUsingBearerToken(): boolean {
     return false;
   }
-  isAutomatedAuth() {
+
+  isAutomatedAuth(): boolean {
     return true;
   }
 }

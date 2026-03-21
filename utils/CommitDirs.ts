@@ -3,11 +3,11 @@ import fs from "node:fs";
 
 /**
  * Commit .cpp file + matching .d directory to Git
- * @param {string} cppFile - e.g., "someFile.cpp"
- * @param {number} points - Points to include in commit message (default: 100)
- * @throws {Error} on validation/execution failures
+ * @param cppFile - e.g., "someFile.cpp"
+ * @param points - Points to include in commit message (default: 100)
+ * @throws Error on validation/execution failures
  */
-export function CommitCppWithDir(cppFile, points = 100) {
+export function CommitCppWithDir(cppFile: string, points: number | string | number[] = 100): void {
   // Validate file exists
   if (!fs.existsSync(cppFile)) {
     throw new Error(`File not found: ${cppFile}`);
@@ -43,12 +43,14 @@ export function CommitCppWithDir(cppFile, points = 100) {
   }
 
   // Build commit message
-  const pointsSuffix =
-    points.constructor == Array
-      ? points.join(" ")
-      : isNaN(parseInt(points, 10))
-        ? points
-        : `${points} points`;
+  let pointsSuffix: string;
+  if (Array.isArray(points)) {
+    pointsSuffix = points.join(" ");
+  } else if (typeof points === "number") {
+    pointsSuffix = `${points} points`;
+  } else {
+    pointsSuffix = isNaN(parseInt(points, 10)) ? points : `${points} points`;
+  }
   const commitMsg = `Add ${cppFile} (${pointsSuffix})`;
 
   // Commit (shell-safe array syntax)

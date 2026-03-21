@@ -1,5 +1,10 @@
 import https from 'https';
-import { Judge } from './BaseJudge.js';
+import type {  ProblemId, AuthCredentials, SubmissionResponse } from "./BaseJudge.ts";
+import {Judge} from"./BaseJudge.ts"
+interface PeshoProblemId extends ProblemId {
+  assignment: string;
+  task: string;
+}
 
 export class PeshoJudge extends Judge {
   constructor() {
@@ -10,11 +15,11 @@ export class PeshoJudge extends Judge {
     });
   }
 
-  detect(url) {
+  detect(url: string): boolean {
     return url.includes('pesho.org');
   }
 
-  parseURL(url) {
+  parseURL(url: string): PeshoProblemId {
     // Format: /assignments/{assign}/tasks/{task}
     const parts = url.replace(/^https?:\/\//, '').split('/');
     return {
@@ -23,7 +28,7 @@ export class PeshoJudge extends Judge {
     };
   }
 
-  async submit(code, problemId, credentials) {
+  async submit(code: string, problemId: PeshoProblemId, credentials: AuthCredentials): Promise<SubmissionResponse> {
     const url = this.config.submitUrl
       .replace('{assign}', problemId.assignment)
       .replace('{task}', problemId.task);
@@ -42,7 +47,11 @@ export class PeshoJudge extends Judge {
       }, (res) => {
         let data = '';
         res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve(data));
+        res.on('end', () => resolve({
+          data,
+          status: res.statusCode ?? 0,
+          headers: res.headers as Record<string, string | string[]>
+        }));
       });
 
       req.on('error', reject);
@@ -51,21 +60,27 @@ export class PeshoJudge extends Judge {
     });
   }
 
-  extractId(response) {
+  extractId(response: SubmissionResponse | string): string | null {
+    const responseStr = typeof response === 'string' ? response : (response.data ?? '');
     // Format: "Submitted. 12345"
-    const match = response.match(/Submitted\.\s*(\d+)/i) || response.match(/(\d+)$/m);
+    const match = responseStr.match(/Submitted\.\s*(\d+)/i) || responseStr.match(/(\d+)$/m);
     return match ? match[1] : null;
   }
 
-  getSubmissionUrl(submissionId, problemId) {
+  getSubmissionUrl(submissionId: string, problemId?: PeshoProblemId): string {
+    if (!problemId) {
+      return this.config.submissionUrl.replace('{id}', submissionId);
+    }
     return this.config.submissionUrl
       .replace('{assign}', problemId.assignment)
       .replace('{id}', submissionId);
   }
-  isUsingBearerToken() {
+
+  isUsingBearerToken(): boolean {
     return false;
   }
-  isAutomatedAuth() {
+
+  isAutomatedAuth(): boolean {
     return false;
   }
 }

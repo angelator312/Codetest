@@ -1,16 +1,22 @@
 #!/usr/bin/env node
-import { spawn } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import chokidar from "chokidar";
-import { join, dirname, isAbsolute } from "path";
+import { join, dirname } from "path";
 import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 import chalk from "chalk";
 import { execFileSync } from "node:child_process";
-import { Setup } from "./utils/Commands.js";
-import { judges } from "./lib/judges/JudgeRegistry.js";
-import { config } from "./lib/judges/Config.js";
-import { SubmitCode } from "./lib/SubmitCode.js";
-import { CommitCppWithDir } from "./utils/CommitDirs.js";
+import { Setup } from "./utils/Commands.ts";
+import { judges } from "./lib/judges/JudgeRegistry.ts";
+import { config } from "./lib/judges/Config.ts";
+import { SubmitCode } from "./lib/SubmitCode.ts";
+import { CommitCppWithDir } from "./utils/CommitDirs.ts";
+
+interface TestScriptConfig {
+  cppFiles: string[];
+  CFG: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 if (process.argv.length <= 2 || process.argv.indexOf("--help") !== -1) {
   console.log("HELP");
@@ -20,8 +26,10 @@ if (process.argv.length <= 2 || process.argv.indexOf("--help") !== -1) {
   console.log("options: --verbose;--keep-input;--watch");
   process.exit(0);
 }
+
 let args = process.argv.slice(2);
 let watchMode = false;
+
 if (args[0] === "--auth") {
   const judgeName = args[1];
   if (!judgeName) {
@@ -52,7 +60,7 @@ if (args[0] === "--auth") {
     config.setJudgeCredentials("pesho", { username, password });
     console.log("✅ Pesho credentials saved");
   } else if (judge.isAutomatedAuth()) {
-    const cred = await judge.authenticateInteractive();
+    const cred = await judge.authenticateInteractive!();
     config.setJudgeCredentials(judge.name, cred);
     console.log(` ${judge.name} credentials saved`);
   }
@@ -71,7 +79,8 @@ if (args[0] === "--auth") {
       CommitCppWithDir(args[1], args[2]);
       process.exit(0);
     } catch (err) {
-      console.error(`❌ Error: ${err.message}`);
+      const error = err as Error;
+      console.error(`❌ Error: ${error.message}`);
       process.exit(1);
     }
   } else {
@@ -79,11 +88,13 @@ if (args[0] === "--auth") {
     process.exit(1);
   }
 }
+
 const watchModeIndex = args.indexOf("--watch");
 if (watchModeIndex !== -1) {
   args.splice(watchModeIndex, 1);
   watchMode = true;
 }
+
 let testScriptPath = args[0];
 args = args.slice(1);
 let testScriptDir = dirname(testScriptPath);
@@ -92,7 +103,7 @@ if (!fs.existsSync(testScriptPath)) {
   const stdTestFile = join(
     import.meta.dirname,
     "stdTest",
-    testScriptPath + ".js",
+    testScriptPath + ".ts",
   );
   if (fs.existsSync(stdTestFile)) {
     testScriptPath = stdTestFile;
@@ -103,28 +114,30 @@ if (!fs.existsSync(testScriptPath)) {
   }
 }
 
-const configFromScript = {
+const configFromScript: TestScriptConfig = {
   cppFiles: [],
   CFG: {},
   ...getConfigFromScript(),
 };
-let childProcess;
+
+let childProcess: ChildProcess | undefined;
+
 // Always run the first time
 const exitCode = await runTest();
 
-if (watchMode || configFromScript.CFG.watch) {
+if (watchMode || (configFromScript.CFG.watch as boolean)) {
   Setup(testScriptPath, args, configFromScript);
   const watchFiles = [testScriptPath, ...configFromScript.cppFiles];
-  if (args.indexOf("--verbose") != -1)
+  if (args.indexOf("--verbose") !== -1)
     console.log(`>>> Watching for file changes to re-run ${watchFiles}...`);
-  chokidar.watch(watchFiles).on("change", (file) => {
+  chokidar.watch(watchFiles).on("change", () => {
     runTest();
   });
 } else {
   process.exit(exitCode);
 }
 
-export async function runTest() {
+export async function runTest(): Promise<number> {
   try {
     if (childProcess && childProcess.exitCode === null) {
       console.log(`Killing ${childProcess.pid}`);
@@ -138,7 +151,7 @@ export async function runTest() {
       process.execPath,
       [
         "--import",
-        pathToFileURL(join(import.meta.dirname, "lib", "loader.js")),
+        pathToFileURL(join(import.meta.dirname, "lib", "loader.ts")).href,
         testScriptPath,
         ...args,
       ],
@@ -146,17 +159,18 @@ export async function runTest() {
     );
     const { code } = await waitForProcess(childProcess);
     console.log(
-      `>>> ${testScriptPath} exited with code ${code == 0 ? chalk.green(code) : chalk.red(code)}`,
+      `>>> ${testScriptPath} exited with code ${code === 0 ? chalk.green(code.toString()) : chalk.red(code.toString())}`,
     );
-    return code;
+    return code ?? 1;
   } catch (e) {
     console.error("Error running test:");
     console.error(e);
-    process.exit(e.status || 1);
+    const err = e as Error & { status?: number };
+    process.exit(err.status || 1);
   }
 }
 
-async function waitForProcess(child) {
+async function waitForProcess(child: ChildProcess): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
   return new Promise((resolve) => {
     if (child.exitCode !== null) {
       resolve({ code: child.exitCode, signal: null });
@@ -168,27 +182,28 @@ async function waitForProcess(child) {
   });
 }
 
-function getConfigFromScript() {
+function getConfigFromScript(): TestScriptConfig {
   try {
     const stdout = execFileSync(process.execPath, [
       "--import",
-      pathToFileURL(join(import.meta.dirname, "lib", "cpp-deps-loader.js")),
+      pathToFileURL(join(import.meta.dirname, "lib", "cpp-deps-loader.ts")).href,
       testScriptPath,
       ...args,
     ]);
     try {
-      return JSON.parse(stdout);
-    } catch (e) {
+      return JSON.parse(stdout.toString()) as TestScriptConfig;
+    } catch {
       console.error("Failed to get CPP files!");
       console.error("---stdout---");
       console.error(stdout.toString());
     }
   } catch (e) {
-    console.error("Failed to get CPP files!1");
+    console.error("Failed to get CPP files!");
+    const err = e as Error & { output?: (Buffer | null)[] };
     console.error("---stdout---");
-    console.error(e.output?.[1]?.toString());
+    console.error(err.output?.[1]?.toString());
     console.error("---stderr---");
-    console.error(e.output?.[2]?.toString());
+    console.error(err.output?.[2]?.toString());
   }
   process.exit(1);
 }

@@ -1,6 +1,16 @@
 import fs from "fs";
-import { judges } from "./JudgeRegistry.js";
-export function CodeParse(filePath) {
+import { judges } from "./JudgeRegistry.ts";
+import { Judge } from "./BaseJudge.ts";
+import type {ProblemId } from "./BaseJudge.ts";
+
+export interface CodeParseResult {
+  judge: Judge;
+  problemId: ProblemId;
+  code: string;
+  url: string;
+}
+
+export function CodeParse(filePath: string): CodeParseResult {
   if (!fs.existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
   }

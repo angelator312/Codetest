@@ -1,15 +1,18 @@
-import { ArenaJudge } from "./ArenaJudge.js";
-import { PeshoJudge } from "./PeshoJudge.js";
-import { LibraryCJudge } from "./LibraryCJudge.js";
-import { CSESJudge } from "./CSESJudge.js";
+import { ArenaJudge } from "./ArenaJudge.ts";
+import { PeshoJudge } from "./PeshoJudge.ts";
+import { LibraryCJudge } from "./LibraryCJudge.ts";
+import { CSESJudge } from "./CSESJudge.ts";
+import { Judge } from "./BaseJudge.ts";
 
 class JudgeRegistry {
+  judges: Map<string, Judge>;
+
   constructor() {
     this.judges = new Map();
     this.registerDefaults();
   }
 
-  registerDefaults() {
+  registerDefaults(): void {
     // Add more
     this.register(new ArenaJudge());
     this.register(new PeshoJudge());
@@ -17,11 +20,11 @@ class JudgeRegistry {
     this.register(new CSESJudge());
   }
 
-  register(judge) {
+  register(judge: Judge): void {
     this.judges.set(judge.name.toLowerCase(), judge);
   }
 
-  detect(url) {
+  detect(url: string): Judge | null {
     for (const judge of this.judges.values()) {
       if (judge.detect(url)) {
         return judge;
@@ -30,11 +33,11 @@ class JudgeRegistry {
     return null;
   }
 
-  get(name) {
+  get(name: string): Judge | undefined {
     return this.judges.get(name.toLowerCase());
   }
 
-  list() {
+  list(): string[] {
     return Array.from(this.judges.keys());
   }
 }

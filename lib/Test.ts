@@ -2,44 +2,64 @@ import { execSync } from "child_process";
 import { globSync, readFileSync } from "node:fs";
 import { diffLines } from "diff";
 import chalk from "chalk";
-import { formatNanoseconds, runCommand } from "./utils.js";
-import { CFG } from "./Config.js";
-import { Fail } from "./Out.js";
+import { formatNanoseconds, runCommand } from "./utils.ts";
+import { CFG } from "./Config.ts";
+import { Fail, CloseOutput, GetOutput, SaveOutputAs, SetOutput } from "./Out.ts";
 import path from "node:path";
 import os from "node:os";
-let commands;
-let cppFlags;
-let goldenCommandCpp;
-let testCommandCpp;
-let timeoutMs;
-const ERROR_FILE_NAME = path.join(os.homedir(), ".config", "codetest","last.err");
 
-function compileCommand(key, cppFile) {
-  let command = cppFile.replace(".cpp", ".exe");
+interface Commands {
+  goldenCommand?: string;
+  testCommand?: string;
+}
+
+let commands: Commands | undefined;
+let cppFlags: string | undefined;
+let goldenCommandCpp: string | undefined;
+let testCommandCpp: string | undefined;
+let timeoutMs: number | undefined;
+const ERROR_FILE_NAME = path.join(os.homedir(), ".config", "codetest", "last.err");
+
+interface IteratorRange {
+  min: number;
+  max: number;
+}
+
+interface Iterators {
+  [key: string]: IteratorRange;
+}
+
+let iterators: Iterators = {};
+let iterKeys: string[] | undefined;
+let currentIterator: number[] | undefined;
+
+function compileCommand(key: string, cppFile: string): Record<string, string> {
+  const command = cppFile.replace(".cpp", ".exe");
   try {
     execSync(`g++ ${cppFile} ${cppFlags ?? ""} -O2 -o ${command}`, {
       encoding: "utf8",
       stdio: "inherit",
     });
   } catch (e) {
-    console.error(e.message);
+    const error = e as Error;
+    console.error(error.message);
     Fail(`Failed to compile ${cppFile}`);
   }
   return { [key]: command };
 }
 
-function compileCommands(select) {
+function compileCommands(select?: { goldenCommand?: boolean; testCommand?: boolean }): Commands {
   if (
     !commands ||
     (select?.goldenCommand && !commands.goldenCommand) ||
     (select?.testCommand && !commands.testCommand)
   ) {
-    let result = {};
+    let result: Record<string, string> = {};
     for (const [key, cppFile] of [
       ["goldenCommand", goldenCommandCpp],
       ["testCommand", testCommandCpp],
-    ]) {
-      if (!select || select[key]) {
+    ] as [string, string | undefined][]) {
+      if (!select || select[key as keyof typeof select]) {
         if (!cppFile) {
           Fail(
             "Command C++ file for " +
@@ -58,31 +78,41 @@ function compileCommands(select) {
   return commands;
 }
 
-export function SetCpp(golden, test) {
+export function SetCpp(golden: string, test: string): void {
   goldenCommandCpp = golden;
   testCommandCpp = test;
 }
 
-export function SetCppFlags(flags) {
+export function SetCppFlags(flags: string): void {
   cppFlags = flags;
 }
 
-export function SetTimeout(toMs) {
+export function SetTimeout(toMs: number): void {
   timeoutMs = toMs;
 }
 
-export function Test() {
+export function Test(): void {
   CloseOutput();
   const outputFileName = GetOutput();
 
+  if (!outputFileName) {
+    Fail("Output file name not set");
+    return;
+  }
+
   let { goldenCommand, testCommand } = compileCommands();
+
+  if (!goldenCommand || !testCommand) {
+    Fail("Commands not compiled");
+    return;
+  }
 
   const solFileName = outputFileName.replace(/\.[^.]+$/, ".sol");
   const outFileName = outputFileName.replace(/\.[^.]+$/, ".out");
   let startGold = process.hrtime.bigint();
-  runCommand(`./${goldenCommand}`, outputFileName, solFileName, timeoutMs,os.devNull);
+  runCommand(`./${goldenCommand}`, outputFileName, solFileName, timeoutMs ?? 0, os.devNull);
   let endGold = process.hrtime.bigint();
-  runCommand(`./${testCommand}`, outputFileName, outFileName, timeoutMs,ERROR_FILE_NAME);
+  runCommand(`./${testCommand}`, outputFileName, outFileName, timeoutMs ?? 0, ERROR_FILE_NAME);
   let endTest = process.hrtime.bigint();
   if (CFG.verbose) {
     console.log(
@@ -92,7 +122,7 @@ export function Test() {
     );
   }
   try {
-    diff(solFileName, outFileName,ERROR_FILE_NAME);
+    diff(solFileName, outFileName, ERROR_FILE_NAME);
 
     if (CFG.verbose) {
       console.log("Test passed for: " + currentIteratorDescription());
@@ -104,33 +134,31 @@ export function Test() {
     }
     SetOutput(outputFileName); // reopen output file
   } catch (e) {
-    console.error("Test failed "+solFileName+" "+outFileName+" "+outputFileName);
+    console.error("Test failed " + solFileName + " " + outFileName + " " + outputFileName);
     process.exit(1);
   }
 }
 
-let iterators = {};
-let iterKeys;
-let currentIterator;
-
-export function __initializeIterator(name, min, max) {
+export function __initializeIterator(name: string, min: number, max: number): void {
   iterators[name] = { min, max };
 }
 
-function updateGlobals() {
+function updateGlobals(): void {
+  if (!iterKeys || !currentIterator) return;
   for (let i = 0; i < iterKeys.length; i++) {
     const key = iterKeys[i];
-    globalThis[key] = currentIterator[i];
+    (globalThis as Record<string, unknown>)[key] = currentIterator[i];
   }
   if (CFG.verbose) {
     console.log("Test: " + currentIteratorDescription());
   }
 }
 
-function incIterator() {
+function incIterator(): boolean {
+  if (!iterKeys || !currentIterator) return false;
   let idx = iterKeys.length - 1;
   while (idx >= 0) {
-    let key = iterKeys[idx];
+    const key = iterKeys[idx];
     if (currentIterator[idx] < iterators[key].max) {
       currentIterator[idx]++;
       return true;
@@ -142,15 +170,16 @@ function incIterator() {
   return false;
 }
 
-function currentIteratorDescription() {
-  let s = [];
+function currentIteratorDescription(): string {
+  if (!iterKeys || !currentIterator) return "";
+  const s: string[] = [];
   for (let i = 0; i < iterKeys.length; i++) {
     s.push(iterKeys[i] + " = " + currentIterator[i]);
   }
   return s.join(", ");
 }
 
-export function NextCase(p) {
+export function NextCase(): boolean {
   // First time initialize currentIterator and return true
   if (!iterKeys) {
     iterKeys = Object.keys(iterators);
@@ -163,25 +192,31 @@ export function NextCase(p) {
   return r;
 }
 
-export function ListInputFiles(dirName) {
+export function ListInputFiles(dirName: string): string[] {
   return globSync(`${dirName}**/*.in`);
 }
 
-export function ListSomeFiles(dirName, glob) {
+export function ListSomeFiles(dirName: string, glob: string): string[] {
   return globSync(`${dirName}**/${glob}`);
 }
 
-export function TestSol(fileName) {
+export function TestSol(fileName: string): void {
   let { goldenCommand } = compileCommands({ goldenCommand: true });
+
+  if (!goldenCommand) {
+    Fail("Golden command not set");
+    return;
+  }
+
   const testFileBase = fileName.replace(/\.in$/, "");
-  let outputFileName = testFileBase + ".out";
+  const outputFileName = testFileBase + ".out";
 
   let startGold = process.hrtime.bigint();
   runCommand(
     "." + path.sep + goldenCommand,
     fileName,
     outputFileName,
-    timeoutMs,
+    timeoutMs ?? 0,
     ERROR_FILE_NAME,
   );
   let endGold = process.hrtime.bigint();
@@ -189,8 +224,8 @@ export function TestSol(fileName) {
     console.log(`Golden: ${formatNanoseconds(endGold - startGold)}`);
   }
   try {
-    let solFileName = testFileBase + ".sol";
-    diff(solFileName, outputFileName,ERROR_FILE_NAME);
+    const solFileName = testFileBase + ".sol";
+    diff(solFileName, outputFileName, ERROR_FILE_NAME);
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
     console.error(chalk.red("Test failed for: " + fileName));
@@ -198,14 +233,14 @@ export function TestSol(fileName) {
   }
 }
 
-function diffCmd(file1, file2) {
+function diffCmd(file1: string, file2: string): void {
   execSync(`diff --color -u ${file1} ${file2}`, {
     encoding: "utf8",
     stdio: "inherit",
   });
 }
 
-function diff(file1, file2,errFileName) {
+function diff(file1: string, file2: string, errFileName: string): void {
   const f1 = readFileSync(file1, "utf8");
   const f2 = readFileSync(file2, "utf8");
 
@@ -216,15 +251,15 @@ function diff(file1, file2,errFileName) {
   const hasDiff = differences.some((c) => c.added || c.removed);
   if (hasDiff) {
     if (errFileName)
-    process.stderr.write(readFileSync(errFileName).toString());
+      process.stderr.write(readFileSync(errFileName).toString());
     printColoredDiff(differences);
   }
   if (hasDiff) {
-    throw Error("Test Failed");
+    throw new Error("Test Failed");
   }
 }
 
-function printColoredDiff(differences) {
+function printColoredDiff(differences: { value: string; added?: boolean; removed?: boolean }[]): void {
   let oldLineNumber = 1;
   let newLineNumber = 1;
 

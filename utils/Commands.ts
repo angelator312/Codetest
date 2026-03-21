@@ -1,26 +1,31 @@
 import chalk from "chalk";
 import readline from "readline";
-import { SubmitCode } from "../lib/SubmitCode.js";
-import { CommitCppWithDir } from "./CommitDirs.js";
-import { runTest } from "../Codetest.js";
+import { SubmitCode } from "../lib/SubmitCode.ts";
+import { CommitCppWithDir } from "./CommitDirs.ts";
+import { runTest } from "../Codetest.ts";
 
 const sendShortcut = "f";
 
+interface CommandHandler {
+  handler: (args: string[], filename: string, watchFiles: string[], testGenFile: string) => Promise<void> | void;
+  description?: string;
+}
+
 // Command registry to store vim-style commands
-const commandRegistry = new Map();
+const commandRegistry = new Map<string, CommandHandler>();
 
 // Register a command with its handler function
-export function registerCommand(name, handler, description = "") {
+export function registerCommand(name: string, handler: CommandHandler['handler'], description = ""): void {
   commandRegistry.set(name, { handler, description });
 }
 
 // Execute a command by name with arguments
 export async function executeCommand(
-  commandStr,
-  filename,
-  watchFiles,
-  testGenFile,
-) {
+  commandStr: string,
+  filename: string,
+  watchFiles: string[],
+  testGenFile: string,
+): Promise<void> {
   // Parse command and arguments
   const trimmed = commandStr.trim();
   if (!trimmed.startsWith(":")) {
@@ -32,15 +37,15 @@ export async function executeCommand(
   const commandName = parts[0];
   const args = parts.slice(1);
 
-  if (commandRegistry.has(commandName)) {
+  const command = commandRegistry.get(commandName);
+  if (command) {
     try {
       // Pass filename and watchFiles to handlers that need them
-      await commandRegistry
-        .get(commandName)
-        .handler(args, filename, watchFiles, testGenFile);
+      await command.handler(args, filename, watchFiles, testGenFile);
     } catch (error) {
+      const err = error as Error;
       console.error(
-        chalk.red(`Error executing command :${commandName}:`, error.message),
+        chalk.red(`Error executing command :${commandName}:`, err.message),
       );
     }
   } else {
@@ -50,7 +55,7 @@ export async function executeCommand(
 }
 
 // Initialize default commands
-function initializeDefaultCommands() {
+function initializeDefaultCommands(): void {
   // Help command
   registerCommand(
     "h",
@@ -92,24 +97,38 @@ function initializeDefaultCommands() {
 
   registerCommand(
     "p",
-    (args, cmdFilename, cmdWatchFiles) => {
-      CommitCppWithDir(cmdFilename, args.length == 1 ? args[0] : args);
+    (args, cmdFilename) => {
+      const pointsArg = args.length === 1 ? args[0] : args;
+      // CommitCppWithDir accepts number | string | number[]
+      if (Array.isArray(pointsArg)) {
+        CommitCppWithDir(cmdFilename, pointsArg as unknown as number[]);
+      } else {
+        CommitCppWithDir(cmdFilename, pointsArg);
+      }
     },
     "Pushes changes to git.",
   );
   registerCommand(
     "res",
-    (args, cmdFilename, cmdWatchFiles, testGenFile) => {
-      runTest(cmdFilename);
+    () => {
+      runTest();
     },
     "Runs the JS file",
   );
 }
-function ClearLastLine() {
+
+function ClearLastLine(): void {
   process.stdout.write("\r\x1b[K");
 }
-export function Setup(testScriptPath, argv, config) {
-  if (config.cppFiles.length == 0) {
+
+interface TestScriptConfig {
+  cppFiles: string[];
+  CFG: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export function Setup(testScriptPath: string, argv: string[], config: TestScriptConfig): void {
+  if (config.cppFiles.length === 0) {
     console.error(chalk.red("No CPP files!\n"));
     process.exit(1);
   }
@@ -141,27 +160,27 @@ export function Setup(testScriptPath, argv, config) {
       await SubmitCode(filename);
     } else if (key.ctrl && key.name === "l") {
       console.clear();
-      console.log(chalk.blue("Code Test "+filename));
-    } else if (key.name == "return") {
+      console.log(chalk.blue("Code Test " + filename));
+    } else if (key.name === "return") {
       console.log();
       if (commandBuffer)
         executeCommand(commandBuffer, filename, watchFiles, testScriptPath);
       commandBuffer = "";
       startCommand = false;
     } else if (!key.ctrl && startCommand) {
-      if (key.name == "backspace") {
+      if (key.name === "backspace") {
         commandBuffer = commandBuffer.slice(0, -1);
-        if (commandBuffer.length == 0) startCommand = false;
+        if (commandBuffer.length === 0) startCommand = false;
         ClearLastLine();
         process.stdout.write(commandBuffer);
-      } else commandBuffer += key.sequence;
+      } else commandBuffer += key.sequence ?? '';
     } else if (!startCommand) {
-      if (key.sequence == ":") {
+      if (key.sequence === ":") {
         startCommand = true;
         commandBuffer = ":";
       }
     }
-    if (startCommand && key.sequence.length < 2)
-      process.stdout.write(key.sequence);
+    if (startCommand && (key.sequence?.length ?? 0) < 2)
+      process.stdout.write(key.sequence ?? '');
   });
 }

@@ -3,3 +3,7 @@ test*.out
 node_modules
 .debug
 *.err
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo.*

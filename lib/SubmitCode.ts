@@ -1,12 +1,17 @@
-import { config } from "./judges/Config.js";
-import { CodeParse } from "./judges/CodeParser.js";
+import { config } from "./judges/Config.ts";
+import { CodeParse } from "./judges/CodeParser.ts";
 import { exec } from "child_process";
+import type {  SubmissionResponse } from "./judges/BaseJudge.ts";
 
-const defaultOptions = { openBrowser: true };
+interface SubmitOptions {
+  openBrowser?: boolean;
+}
 
-export async function SubmitCode(filePath, opions = {}) {
-  //returning true on no problems, false - if there some problems
-  const options = { ...defaultOptions, ...opions };
+const defaultOptions: Required<SubmitOptions> = { openBrowser: true };
+
+export async function SubmitCode(filePath: string, options: SubmitOptions = {}): Promise<boolean> {
+  // returning true on no problems, false - if there some problems
+  const opts = { ...defaultOptions, ...options };
   console.log(`\n📤 Submitting ${filePath}...`);
   try {
     // Parse file
@@ -23,8 +28,13 @@ export async function SubmitCode(filePath, opions = {}) {
 
     // Submit
     let response = await judge.submit(code, problemId, credentials);
+
+    // Check if response is an HTTP response with status
+    const hasStatus = typeof response === 'object' && response !== null && 'status' in response;
+    const status = hasStatus ? (response as SubmissionResponse).status : 0;
+
     if (
-      (response.status == 403 || response.status == 401) &&
+      (status === 403 || status === 401) &&
       typeof judge.reloadAuth === "function"
     ) {
       const cred = await judge.reloadAuth(config.getJudgeCredentials(judge.name));
@@ -42,17 +52,19 @@ export async function SubmitCode(filePath, opions = {}) {
 
     // Open browser
     const url = judge.getSubmissionUrl(id, problemId);
-    if (options.openBrowser) OpenURLInBrowser(url);
+    if (opts.openBrowser) OpenURLInBrowser(url);
     return true;
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    const err = error as Error;
+    console.error("❌ Error:", err.message);
     return false;
   }
 }
-function OpenURLInBrowser(url) {
+
+function OpenURLInBrowser(url: string): void {
   console.log(`Opening ${url}`);
   const platform = process.platform;
-  let command;
+  let command: string;
 
   if (platform === "linux") {
     command = "xdg-open";

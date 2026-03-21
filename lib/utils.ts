@@ -1,9 +1,11 @@
 import { execSync } from "node:child_process";
+import type { ExecSyncOptions } from "node:child_process";
+
 import fs from "node:fs";
 import os from 'node:os';
 import chalk from 'chalk';
 
-export function formatNanoseconds(nanos) {
+export function formatNanoseconds(nanos: bigint): string {
   if (typeof nanos !== 'bigint') {
     throw new TypeError('Input must be a BigInt');
   }
@@ -38,35 +40,49 @@ export function formatNanoseconds(nanos) {
   return `${sign}${nanos} ns`; // fallback
 }
 
-export function runCommand(cmd, stdInPath, stdOutPath, timeout,stdErrPath){
+interface ExecSyncError extends Error {
+  signal?: string;
+  status?: number;
+}
+
+export function runCommand(
+  cmd: string,
+  stdInPath: string,
+  stdOutPath: string,
+  timeout: number,
+  stdErrPath: string | null
+): void {
   // Open input and output files
   const input = fs.openSync(stdInPath, 'r');
   const output = fs.openSync(stdOutPath, 'w');
-  const err =stdErrPath? fs.openSync(stdErrPath, 'w'):"inherit";
+  const err = stdErrPath ? fs.openSync(stdErrPath, 'w') : "inherit";
 
   try {
     execSync(cmd, {
       stdio: [
         input,    // stdin: read from input.txt
         output,   // stdout: write to output.txt
-        err // stderr: inherit parent's stderr
+        err       // stderr: inherit or file
       ],
       timeout,
-    });
-  } catch(e){
-    if(e.signal){
-      console.error(chalk.red(getSignalDescription(e)))
+    } as ExecSyncOptions);
+  } catch (e) {
+    const error = e as ExecSyncError;
+    if (error.signal) {
+      const description = getSignalDescription(error);
+      if (description) {
+        console.error(chalk.red(description));
+      }
     }
-    throw new CommandFailure(`'${cmd}' failed.`, e)
+    throw new CommandFailure(`'${cmd}' failed.`, error);
   } finally {
     fs.closeSync(input);
     fs.closeSync(output);
-    if(err!="inherit") fs.closeSync(err);
+    if (err !== "inherit") fs.closeSync(err);
   }
 }
 
-
-function getSignalDescription(error) {
+function getSignalDescription(error: ExecSyncError): string | null {
   // Check if the error has a 'signal' property (set by child_process when killed by signal)
   if (!error || typeof error !== 'object' || !error.signal) {
     return null;
@@ -75,12 +91,12 @@ function getSignalDescription(error) {
   const signal = error.signal;
 
   // Validate it's a known signal
-  if (!os.constants.signals[signal]) {
+  if (!os.constants.signals[signal as keyof typeof os.constants.signals]) {
     return `Terminated by unknown signal: ${signal}`;
   }
 
   // Map common signals to user-friendly messages
-  const descriptions = {
+  const descriptions: Record<string, string> = {
     SIGINT: 'Interrupted (Ctrl+C or similar)',
     SIGTERM: 'Terminated gracefully',
     SIGKILL: 'Forcibly killed',
@@ -104,9 +120,10 @@ function getSignalDescription(error) {
     : `Terminated by signal: ${signal}`;
 }
 
-
 export class CommandFailure extends Error {
-  constructor(message, cause) {
+  cause?: Error;
+
+  constructor(message: string, cause?: Error) {
     super(message);
     this.name = "CommandFailure";
     this.cause = cause;
@@ -114,7 +131,7 @@ export class CommandFailure extends Error {
 }
 
 export class Failure extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.name = "Failure";
   }

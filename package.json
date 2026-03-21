@@ -7,15 +7,23 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "exit 0"
+    "test": "exit 0",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch"
   },
   "bin": {
-    "codetest": "Codetest.js"
+    "codetest": "Codetest.ts"
   },
   "dependencies": {
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
     "diff": "^8.0.3",
     "random-seedable": "^1.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
