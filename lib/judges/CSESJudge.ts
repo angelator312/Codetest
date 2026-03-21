@@ -25,8 +25,8 @@ export class CSESJudge extends Judge {
   private lastCookies: Record<string, string>;
 
   debugLog(filename: string, content: string): void {
-    fs.writeFileSync(`./debug_${filename}.html`, content);
-    console.log(`   💾 Debug saved to debug_${filename}.html`);
+    // fs.writeFileSync(`./debug_${filename}.html`, content);
+    // console.log(`   💾 Debug saved to debug_${filename}.html`);
   }
 
   constructor() {
@@ -50,7 +50,6 @@ export class CSESJudge extends Judge {
       },
     });
     this.lastCookies = {};
-    this.currentCSRF = null;
   }
 
   detect(url: string): boolean {
@@ -76,6 +75,9 @@ export class CSESJudge extends Judge {
       const u = new URL(url);
       const data = opts.body || "";
 
+      // Add cookies
+      const cookieStr = opts.cookie || this.getCookieString();
+
       const options = {
         hostname: u.hostname,
         port: 443,
@@ -92,9 +94,9 @@ export class CSESJudge extends Judge {
         },
       } as https.RequestOptions;
 
-      // Add cookies
-      const cookieStr = opts.cookie || this.getCookieString();
-      if (cookieStr) (options.headers as Record<string, string>)["Cookie"] = cookieStr;
+      if (cookieStr) {
+        (options.headers as Record<string, string>)["Cookie"] = cookieStr;
+      }
 
       const req = https.request(options, (res) => {
         const chunks: Buffer[] = [];
@@ -251,11 +253,17 @@ export class CSESJudge extends Judge {
 
     console.log(`   Task: ${taskId}`);
     console.log(`   Language: ${lang}`);
+    // console.log(`   Cookie being sent: ${this.getCookieString()}`);
 
     // Get FRESH CSRF token from submit page
     const submitPageUrl = `https://cses.fi/${type}/submit/${taskId}/`;
-    console.log("SUBMIT:",submitPageUrl)
+    // console.log("SUBMIT:", submitPageUrl);
     const pageRes = await this.request(submitPageUrl);
+
+    // Debug: Check if we're logged in by looking for logout link
+    // const isLoggedIn = pageRes.body.includes("/logout") || pageRes.body.includes("Logout");
+    // console.log(`   Logged in: ${isLoggedIn ? '✅ Yes' : '❌ No'}`);
+
     const freshCSRF = this.extractCSRF(pageRes.body);
 
     if (!freshCSRF) {
