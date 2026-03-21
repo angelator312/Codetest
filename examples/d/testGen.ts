@@ -1,3 +1,4 @@
+/// <reference path="../../types/index.d.ts" />
 SetOutput("test.in");
 SetCpp("d-slow.cpp", "d-fast.cpp");
 

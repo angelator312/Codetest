@@ -5,7 +5,7 @@ export function Str(s: string): void {
   Out(s);
 }
 
-export function Int(n: number): void {
+export function Int(n: number|string): void {
   Str(n.toString());
 }
 

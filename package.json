@@ -9,7 +9,8 @@
   "scripts": {
     "test": "exit 0",
     "typecheck": "tsc --noEmit",
-    "typecheck:watch": "tsc --noEmit --watch"
+    "build": "node scripts/BuildTypes.ts",
+    "prepack": "npm run build"
   },
   "bin": {
     "codetest": "Codetest.ts"
@@ -21,6 +22,7 @@
     "random-seedable": "^1.0.8"
   },
   "devDependencies": {
+    "dts-bundle-generator": "^9.5.1",
     "@types/node": "^25.5.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",

@@ -1,3 +1,4 @@
+/// <reference path="../../types/index.d.ts" />
 const files = ListSomeFiles("./", "*.cpp");
 SetCpp(...files);
 SetTimeout(5000);

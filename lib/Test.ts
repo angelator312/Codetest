@@ -78,7 +78,7 @@ function compileCommands(select?: { goldenCommand?: boolean; testCommand?: boole
   return commands;
 }
 
-export function SetCpp(golden: string, test: string): void {
+export function SetCpp(golden: string, test?: string): void {
   goldenCommandCpp = golden;
   testCommandCpp = test;
 }
