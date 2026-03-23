@@ -7,7 +7,10 @@ import fs from "node:fs";
  * @param points - Points to include in commit message (default: 100)
  * @throws Error on validation/execution failures
  */
-export function CommitCppWithDir(cppFile: string, points: number | string | number[] = 100): void {
+export function CommitCppWithDir(
+  cppFile: string,
+  points: number | string | number[] = 100,
+): void {
   // Validate file exists
   if (!fs.existsSync(cppFile)) {
     throw new Error(`File not found: ${cppFile}`);
@@ -15,10 +18,13 @@ export function CommitCppWithDir(cppFile: string, points: number | string | numb
 
   // Derive .d directory name dynamically: someFile.cpp → someFile.d
   const dirName = cppFile.replace(/\.cpp$/i, ".d");
-  if (!fs.existsSync(dirName) || !fs.statSync(dirName).isDirectory()) {
-    throw new Error(`Directory not found: ${dirName}`);
-  }
-
+  CommitFiles([cppFile, dirName], cppFile, points);
+}
+export function CommitFiles(
+  files: string[],
+  fileInCommitMsg: string,
+  points: number | string | number[] | string[] = 100,
+): void {
   // Verify Git repo
   try {
     execSync("git rev-parse --git-dir", { stdio: "ignore" });
@@ -27,9 +33,7 @@ export function CommitCppWithDir(cppFile: string, points: number | string | numb
   }
 
   // Stage files (shell-safe array syntax)
-  console.log(`✓ Staging: ${cppFile}`);
-  console.log(`✓ Staging: ${dirName}/`);
-  execSync(["git", "add", cppFile, dirName].join(" "), { stdio: "inherit" });
+  execSync(["git", "add", ...files].join(" "), { stdio: "inherit" });
 
   // Check for staged changes (SAFE: doesn't throw on non-zero exit)
   // git diff --cached --name-only exits 0 even when changes exist
@@ -37,12 +41,27 @@ export function CommitCppWithDir(cppFile: string, points: number | string | numb
     encoding: "utf8",
   }).trim();
 
+  // Build commit message
+  const commitMsg = getCommitMsg(fileInCommitMsg, points);
+
+  // Commit (shell-safe array syntax)
+  console.log(`\n✓ Committing: "${commitMsg}"`);
+  execSync(["git", "commit", "-m", `'` + commitMsg + `'`].join(" "), {
+    stdio: "inherit",
+  });
+  console.log("\n✅ Successfully committed changes");
   if (stagedFiles === "") {
-    console.log("\nℹ️ No changes to commit (all files already committed)");
+    console.log("\n No changes to commit (all files already committed)");
     return;
   }
-
-  // Build commit message
+}
+/*
+Generates commit msg
+*/
+export function getCommitMsg(
+  cppFile: string,
+  points: number | string | number[] | string[] = 100,
+) {
   let pointsSuffix: string;
   if (Array.isArray(points)) {
     pointsSuffix = points.join(" ");
@@ -51,12 +70,5 @@ export function CommitCppWithDir(cppFile: string, points: number | string | numb
   } else {
     pointsSuffix = isNaN(parseInt(points, 10)) ? points : `${points} points`;
   }
-  const commitMsg = `Add ${cppFile} (${pointsSuffix})`;
-
-  // Commit (shell-safe array syntax)
-  console.log(`\n✓ Committing: "${commitMsg}"`);
-  execSync(["git", "commit", "-m", `'` + commitMsg + `'`].join(" "), {
-    stdio: "inherit",
-  });
-  console.log("\n✅ Successfully committed changes");
+  return `Add ${cppFile} (${pointsSuffix})`;
 }

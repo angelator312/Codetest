@@ -82,6 +82,8 @@ export function SetCpp(golden: string, test?: string): void {
   goldenCommandCpp = golden;
   testCommandCpp = test;
 }
+export function SetWatchables(...golden: string[]): void {
+}
 
 export function SetCppFlags(flags: string): void {
   cppFlags = flags;
@@ -218,6 +220,7 @@ export function TestSol(fileName: string): void {
     outputFileName,
     timeoutMs ?? 0,
     ERROR_FILE_NAME,
+    ()=>{console.error(readFileSync(ERROR_FILE_NAME).toString())}
   );
   let endGold = process.hrtime.bigint();
   if (CFG.verbose) {

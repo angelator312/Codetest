@@ -19,6 +19,7 @@ declare global{
   function GenericSeq<T>(size: number, p: (i: number) => T): void;
   function GenericMatrix<T>(w: number, h: number, p: (x: number, y: number) => T): void;
   function SetCpp(golden: string, test?: string): void;
+  function SetWatchables(...golden: string[]): void;
   function SetCppFlags(flags: string): void;
   function SetTimeout(toMs: number): void;
   function Test(): void;

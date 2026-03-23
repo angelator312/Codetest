@@ -1,13 +1,19 @@
 import chalk from "chalk";
 import readline from "readline";
 import { SubmitCode } from "../lib/SubmitCode.ts";
-import { CommitCppWithDir } from "./CommitDirs.ts";
+import { CommitCppWithDir, CommitFiles } from "./CommitDirs.ts";
 import { runTest } from "../Codetest.ts";
+import { join } from "path";
 
 const sendShortcut = "f";
 
 interface CommandHandler {
-  handler: (args: string[], filename: string, watchFiles: string[], testGenFile: string) => Promise<void> | void;
+  handler: (
+    args: string[],
+    filename: string,
+    watchFiles: string[],
+    testGenFile: string,
+  ) => Promise<void> | void;
   description?: string;
 }
 
@@ -15,7 +21,11 @@ interface CommandHandler {
 const commandRegistry = new Map<string, CommandHandler>();
 
 // Register a command with its handler function
-export function registerCommand(name: string, handler: CommandHandler['handler'], description = ""): void {
+export function registerCommand(
+  name: string,
+  handler: CommandHandler["handler"],
+  description = "",
+): void {
   commandRegistry.set(name, { handler, description });
 }
 
@@ -97,14 +107,14 @@ function initializeDefaultCommands(): void {
 
   registerCommand(
     "p",
-    (args, cmdFilename) => {
+    (args, cmdFilename, watchFiles2) => {
       const pointsArg = args.length === 1 ? args[0] : args;
       // CommitCppWithDir accepts number | string | number[]
-      if (Array.isArray(pointsArg)) {
-        CommitCppWithDir(cmdFilename, pointsArg as unknown as number[]);
-      } else {
-        CommitCppWithDir(cmdFilename, pointsArg);
-      }
+      //
+      const watchFiles = watchFiles2.filter(
+        (e) => !e.startsWith(join(import.meta.dirname, "..", "stdTest")),
+      );
+      CommitFiles(watchFiles, cmdFilename, pointsArg);
     },
     "Pushes changes to git.",
   );
@@ -127,7 +137,11 @@ interface TestScriptConfig {
   [key: string]: unknown;
 }
 
-export function Setup(testScriptPath: string, argv: string[], config: TestScriptConfig): void {
+export function Setup(
+  testScriptPath: string,
+  argv: string[],
+  config: TestScriptConfig,
+): void {
   if (config.cppFiles.length === 0) {
     console.error(chalk.red("No CPP files!\n"));
     process.exit(1);
@@ -173,7 +187,7 @@ export function Setup(testScriptPath: string, argv: string[], config: TestScript
         if (commandBuffer.length === 0) startCommand = false;
         ClearLastLine();
         process.stdout.write(commandBuffer);
-      } else commandBuffer += key.sequence ?? '';
+      } else commandBuffer += key.sequence ?? "";
     } else if (!startCommand) {
       if (key.sequence === ":") {
         startCommand = true;
@@ -181,6 +195,6 @@ export function Setup(testScriptPath: string, argv: string[], config: TestScript
       }
     }
     if (startCommand && (key.sequence?.length ?? 0) < 2)
-      process.stdout.write(key.sequence ?? '');
+      process.stdout.write(key.sequence ?? "");
   });
 }

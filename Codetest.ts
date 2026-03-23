@@ -103,7 +103,7 @@ if (!fs.existsSync(testScriptPath)) {
   const stdTestFile = join(
     import.meta.dirname,
     "stdTest",
-    testScriptPath + ".ts",
+    testScriptPath + ".js",
   );
   if (fs.existsSync(stdTestFile)) {
     testScriptPath = stdTestFile;
@@ -158,6 +158,7 @@ export async function runTest(): Promise<number> {
       { stdio: "inherit" },
     );
     const { code } = await waitForProcess(childProcess);
+    console.log(code)
     console.log(
       `>>> ${testScriptPath} exited with code ${code === 0 ? chalk.green(code.toString()) : chalk.red(code.toString())}`,
     );
@@ -177,6 +178,7 @@ async function waitForProcess(child: ChildProcess): Promise<{ code: number | nul
       return;
     }
     child.on("exit", (code, signal) => {
+      console.log("2:",code)
       resolve({ code, signal });
     });
   });

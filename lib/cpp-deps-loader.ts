@@ -19,7 +19,13 @@ for (const [name, value] of Object.entries(globals)) {
     (globalThis as Record<string, unknown>)[name] = (...args: string[]) => {
       cppFiles = [...cppFiles, ...args];
     };
-  } else if (MUST_RETURN_ITERABLE.has(name)) {
+  }
+  else if (name === 'SetWatchables') {
+    (globalThis as Record<string, unknown>)[name] = (...args: string[]) => {
+      cppFiles = [...cppFiles, ...args];
+    };
+  }
+  else if (MUST_RETURN_ITERABLE.has(name)) {
     (globalThis as Record<string, unknown>)[name] = () => { return []; };
   } else if (LEAVE_AS_IS.has(name)) {
     (globalThis as Record<string, unknown>)[name] = value;

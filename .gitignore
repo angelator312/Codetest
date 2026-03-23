@@ -1,4 +1,4 @@
-test*.out
+*.out
 *.exe
 node_modules
 .debug

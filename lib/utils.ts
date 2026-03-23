@@ -50,7 +50,8 @@ export function runCommand(
   stdInPath: string,
   stdOutPath: string,
   timeout: number,
-  stdErrPath: string | null
+  stdErrPath?: string | null,
+  OnError?: () =>void|null
 ): void {
   // Open input and output files
   const input = fs.openSync(stdInPath, 'r');
@@ -69,6 +70,7 @@ export function runCommand(
   } catch (e) {
     const error = e as ExecSyncError;
     if (error.signal) {
+      if(OnError)OnError();
       const description = getSignalDescription(error);
       if (description) {
         console.error(chalk.red(description));
