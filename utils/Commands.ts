@@ -70,6 +70,10 @@ function initializeDefaultCommands(): void {
   registerCommand(
     "h",
     () => {
+      console.log(chalk.red("ctrl-c - exiting the program"));
+      console.log(chalk.blue(`ctrl-${sendShortcut} - online judge`));
+      console.log(chalk.cyan(`ctrl-l - Clearing the console`));
+      console.log(chalk.gray(`ctrl-g - Help`));
       console.log(chalk.green("Vim-style commands:"));
       for (const [name, { description }] of commandRegistry.entries()) {
         console.log(
@@ -79,7 +83,6 @@ function initializeDefaultCommands(): void {
     },
     "Show this help message",
   );
-
   // Quit command
   registerCommand(
     "q",
@@ -89,7 +92,6 @@ function initializeDefaultCommands(): void {
     },
     "Quit the program",
   );
-
   // Send/submit command
   registerCommand(
     "submit",
@@ -104,7 +106,7 @@ function initializeDefaultCommands(): void {
     },
     "Submit the current file for evaluation",
   );
-
+  // Commit dirs command
   registerCommand(
     "p",
     (args, cmdFilename, watchFiles2) => {
@@ -118,12 +120,22 @@ function initializeDefaultCommands(): void {
     },
     "Pushes changes to git.",
   );
+  // Run JS file again command
   registerCommand(
     "res",
     () => {
       runTest();
     },
     "Runs the JS file",
+  );
+  // Clear console command
+  registerCommand(
+    "clear",
+    (args, filename) => {
+      console.clear();
+      console.log(chalk.blue("Code Test " + filename));
+    },
+    "Clear the console",
   );
 }
 
@@ -158,23 +170,13 @@ export function Setup(
 
   process.stdin.on("keypress", async (str, key) => {
     if (key.ctrl && key.name === "g") {
-      console.log(chalk.green("Commands in terminal:"));
-      console.log(chalk.red("ctrl-c - exiting the program"));
-      console.log(chalk.blue(`ctrl-${sendShortcut} - online judge`));
-      console.log(chalk.cyan(`ctrl-l - Clearing the console`));
-      console.log(chalk.gray(`ctrl-g - Help`));
-      console.log(chalk.magenta(`:h - Vim-style help`));
-      console.log(chalk.magenta(`:q - Quit`));
-      process.stdout.write("> "); // Show prompt
+      executeCommand(":h", filename, watchFiles, testScriptPath);
     } else if (key.ctrl && key.name === "c") {
-      console.log(chalk.red("Stopping gracefully."));
-      process.exit();
+      executeCommand(":q", filename, watchFiles, testScriptPath);
     } else if (key.ctrl && key.name === sendShortcut) {
-      console.log(chalk.cyan("Sending "));
-      await SubmitCode(filename);
+      executeCommand(":submit", filename, watchFiles, testScriptPath);
     } else if (key.ctrl && key.name === "l") {
-      console.clear();
-      console.log(chalk.blue("Code Test " + filename));
+      executeCommand(":clear", filename, watchFiles, testScriptPath);
     } else if (key.name === "return") {
       console.log();
       if (commandBuffer)
