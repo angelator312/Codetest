@@ -15,18 +15,42 @@ interface CommandHandler {
     testGenFile: string,
   ) => Promise<void> | void;
   description?: string;
+  shortcut?: string;
 }
 
 // Command registry to store vim-style commands
 const commandRegistry = new Map<string, CommandHandler>();
 
-// Register a command with its handler function
+// Shortcut registry: maps key name to command name
+const shortcutRegistry = new Map<string, string>();
+
+// Register a command with its handler function and optional shortcut
 export function registerCommand(
   name: string,
   handler: CommandHandler["handler"],
   description = "",
+  shortcut?: string,
 ): void {
-  commandRegistry.set(name, { handler, description });
+  commandRegistry.set(name, { handler, description, shortcut });
+  if (shortcut) {
+    shortcutRegistry.set(shortcut, name);
+  }
+}
+
+// Execute a shortcut command by key name
+export async function executeShortcut(
+  keyName: string,
+  filename: string,
+  watchFiles: string[],
+  testGenFile: string,
+): Promise<void> {
+  const commandName = shortcutRegistry.get(keyName);
+  if (commandName) {
+    const command = commandRegistry.get(commandName);
+    if (command) {
+      await command.handler([], filename, watchFiles, testGenFile);
+    }
+  }
 }
 
 // Execute a command by name with arguments
@@ -70,18 +94,21 @@ function initializeDefaultCommands(): void {
   registerCommand(
     "h",
     () => {
-      console.log(chalk.red("ctrl-c - exiting the program"));
-      console.log(chalk.blue(`ctrl-${sendShortcut} - online judge`));
-      console.log(chalk.cyan(`ctrl-l - Clearing the console`));
-      console.log(chalk.gray(`ctrl-g - Help`));
       console.log(chalk.green("Vim-style commands:"));
-      for (const [name, { description }] of commandRegistry.entries()) {
+      for (const [
+        name,
+        { description, shortcut },
+      ] of commandRegistry.entries()) {
+        const shortcutStr = shortcut ? chalk.gray(` (Ctrl-${shortcut})`) : "";
         console.log(
-          chalk.blue(`:${name} - ${description || "No description"}`),
+          chalk.blue(
+            `:${name}${shortcutStr} - ${description || "No description"}`,
+          ),
         );
       }
     },
     "Show this help message",
+    "g",
   );
   // Quit command
   registerCommand(
@@ -91,6 +118,7 @@ function initializeDefaultCommands(): void {
       process.exit();
     },
     "Quit the program",
+    "c",
   );
   // Send/submit command
   registerCommand(
@@ -105,6 +133,7 @@ function initializeDefaultCommands(): void {
       }
     },
     "Submit the current file for evaluation",
+    sendShortcut,
   );
   // Commit dirs command
   registerCommand(
@@ -136,6 +165,7 @@ function initializeDefaultCommands(): void {
       console.log(chalk.blue("Code Test " + filename));
     },
     "Clear the console",
+    "l",
   );
 }
 
@@ -169,15 +199,11 @@ export function Setup(
   const watchFiles = [testScriptPath, ...config.cppFiles];
 
   process.stdin.on("keypress", async (str, key) => {
-    if (key.ctrl && key.name === "g") {
-      executeCommand(":h", filename, watchFiles, testScriptPath);
-    } else if (key.ctrl && key.name === "c") {
-      executeCommand(":q", filename, watchFiles, testScriptPath);
-    } else if (key.ctrl && key.name === sendShortcut) {
-      executeCommand(":submit", filename, watchFiles, testScriptPath);
-    } else if (key.ctrl && key.name === "l") {
-      executeCommand(":clear", filename, watchFiles, testScriptPath);
-    } else if (key.name === "return") {
+    if (key.ctrl && key.name) {
+      await executeShortcut(key.name, filename, watchFiles, testScriptPath);
+    }
+
+    if (key.name === "return") {
       console.log();
       if (commandBuffer)
         executeCommand(commandBuffer, filename, watchFiles, testScriptPath);
