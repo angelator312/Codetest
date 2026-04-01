@@ -11,6 +11,7 @@ declare global {
   function Out(s: string): void;
   function Log(...s: unknown[]): void;
   function Fail(msg: string): never;
+  function DirLog(o: any, depth?: number): void;
   function Seed(seed: number): void;
   function MinMax(min: number, max: number): number;
   function Str(s: string): void;
@@ -39,15 +40,23 @@ declare global {
     data: T;
   }
   export interface TreeGenParams {
-    data?: any[];
     startNum: number;
-    nextNum?: number;
     numNodes: number;
+  }
+  class TreeGenState implements TreeGenParams {
+    startNum: number;
+    numNodes: number;
+    data?: any[];
+    state?: Record<string, any>;
+    nextNum?: number;
+    constructor(init: TreeGenParams);
+    getDepthState(key: number): any;
+    getState(key: string, prevKey?: string): any;
   }
   export type NodeGen<T> = (
     parent: Node | null,
     depth: number,
-    params: TreeGenParams,
+    params: TreeGenState,
   ) => T | null;
   function GenTreeDepth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T>;
   function GenTreeBreadth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T>;

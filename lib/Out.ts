@@ -56,3 +56,7 @@ export function Log(...s: unknown[]): void {
 export function Fail(msg: string): never {
   throw new Failure(msg);
 }
+
+export function DirLog(o: any, depth?: number): void {
+  console.dir(o, {depth: depth ?? Number.MAX_SAFE_INTEGER});
+}

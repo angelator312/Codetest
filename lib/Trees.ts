@@ -7,23 +7,52 @@ export interface Node<T = any> {
 }
 
 export interface TreeGenParams {
-  data?: any[];
   startNum: number;
-  nextNum?: number;
   numNodes: number;
+}
+
+export class TreeGenState implements TreeGenParams {
+  startNum: number;
+  numNodes: number;
+
+  data?: any[];
+  state?: Record<string, any>;
+  nextNum?: number;
+
+  constructor(init: TreeGenParams) {
+    this.startNum = init.startNum;
+    this.numNodes = init.numNodes;
+    this.state = {};
+    this.nextNum = this.startNum;
+  }
+
+  getDepthState(key: number) {
+    if (!this.state[key]) {
+      this.state[key] = key > 0 ? { ...this.state[key - 1] } : {};
+    }
+    return this.state[key];
+  }
+
+  getState(key: string , prevKey?: string) {
+    if (!this.state[key]) {
+      this.state[key] = (prevKey && this.state[prevKey]) ? { ...this.state[prevKey] } : {};
+    }
+    return this.state[key];
+  }
+
 }
 
 export type NodeGen<T> = (
   parent: Node | null,
   depth: number,
-  params: TreeGenParams,
+  params: TreeGenState,
 ) => T | null;
 
 function doGenTreeDepth<T>(
   current: Node,
   p: NodeGen<T>,
   depth: number,
-  params: TreeGenParams,
+  params: TreeGenState,
 ) {
   let nodeData: T | null = null;
   while (null != (nodeData = p(current, depth, params))) {
@@ -42,7 +71,7 @@ function doGenTreeBreadth<T>(
   current: Node,
   p: NodeGen<T>,
   depth: number,
-  params: TreeGenParams,
+  params: TreeGenState,
 ) {
   let nodeData: T | null = null;
   while (null != (nodeData = p(current, depth, params))) {
@@ -61,13 +90,14 @@ function doGenTreeBreadth<T>(
 
 export function GenTreeDepth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T> {
   let depth = 0;
+  const state = new TreeGenState(params)
   const root = {
-    n: params.startNum,
+    n: state.startNum,
     children: [],
-    data: p(null, depth, params),
+    data: p(null, depth, state),
   };
-  params.nextNum = params.startNum + 1;
-  doGenTreeDepth(root, p, depth + 1, params);
+  state.nextNum++;
+  doGenTreeDepth(root, p, depth + 1, state);
   return root;
 }
 
@@ -76,18 +106,22 @@ export function GenTreeBreadth<T>(
   params: TreeGenParams,
 ): Node<T> {
   let depth = 0;
-  params.nextNum = params.startNum + 1;
+  const state = new TreeGenState(params)
   const root = {
     n: params.startNum,
     children: [],
-    data: p(null, depth, params),
+    data: p(null, depth, state),
   };
-  doGenTreeBreadth(root, p, depth + 1, params);
+  doGenTreeBreadth(root, p, depth + 1, state);
   return root;
 }
 
 export function BinaryTreeGen<T>(p: NodeGen<T>): NodeGen<T> {
-  return (parent: Node | null, depth: number, params: TreeGenParams) => {
+  return (
+    parent: Node | null,
+    depth: number,
+    params: TreeGenState,
+  ) => {
     if (parent?.children.length >= 2) {
       return null;
     }
