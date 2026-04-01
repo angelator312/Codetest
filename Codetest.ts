@@ -11,6 +11,7 @@ import { judges } from "./lib/judges/JudgeRegistry.ts";
 import { config } from "./lib/judges/Config.ts";
 import { SubmitCode } from "./lib/SubmitCode.ts";
 import { CommitCppWithDir } from "./utils/CommitDirs.ts";
+import copyTypes from "./utils/CopyTypes.ts";
 
 interface TestScriptConfig {
   cppFiles: string[];
@@ -87,6 +88,13 @@ if (args[0] === "--auth") {
     console.error("Usage: codetest -p <filename.cpp>");
     process.exit(1);
   }
+} else if (args[0] === "--export-types") {
+  if (!args[1]) {
+    console.error("You need to specify where to copy");
+    process.exit(1);
+  }
+  copyTypes(args[1]);
+  process.exit(0);
 }
 
 const watchModeIndex = args.indexOf("--watch");
@@ -170,7 +178,9 @@ export async function runTest(): Promise<number> {
   }
 }
 
-async function waitForProcess(child: ChildProcess): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
+async function waitForProcess(
+  child: ChildProcess,
+): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
   return new Promise((resolve) => {
     if (child.exitCode !== null) {
       resolve({ code: child.exitCode, signal: null });
@@ -186,7 +196,8 @@ function getConfigFromScript(): TestScriptConfig {
   try {
     const stdout = execFileSync(process.execPath, [
       "--import",
-      pathToFileURL(join(import.meta.dirname, "lib", "cpp-deps-loader.ts")).href,
+      pathToFileURL(join(import.meta.dirname, "lib", "cpp-deps-loader.ts"))
+        .href,
       testScriptPath,
       ...args,
     ]);

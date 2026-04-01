@@ -12,7 +12,11 @@ export function Int(n: number|string): void {
 export function Choice<T>(...choices: T[]): T {
   return choices[MinMax(0, choices.length - 1)]!;
 }
-
+/**
+ * Makes a sequence from a function.
+ * @param size - sequence length
+ * @param p - function that generates single element
+ */
 export function GenericSeq<T>(size: number, p: (i: number) => T): void {
   for (let i = 0; i < size; i++) {
     const v = p(i);
@@ -21,6 +25,12 @@ export function GenericSeq<T>(size: number, p: (i: number) => T): void {
   Eol();
 }
 
+/**
+ * Makes a matrix from a function.
+ * @param w - width of matrix
+ * @param h - height of matrix
+ * @param p - function that generates single element
+ */
 export function GenericMatrix<T>(w: number, h: number, p: (x: number, y: number) => T): void {
   for (let x = 0; x < w; x++) {
     for (let y = 0; y < h; y++) {

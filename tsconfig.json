@@ -21,7 +21,8 @@
     },
     "typeRoots": ["./node_modules/@types"],
     // "outFile": "types/global.d.ts"
-    "outDir": "types/"
+    "outDir": "types/",
+    "removeComments": false,
   },
   "include": [
     "**/*.ts",
