@@ -22,11 +22,39 @@ declare global {
    * @param p - function that generates single element
    */
   function GenericSeq<T>(size: number, p: (i: number) => T): void;
+  /**
+   * Makes a matrix from a function.
+   * @param w - width of matrix
+   * @param h - height of matrix
+   * @param p - function that generates single element
+   */
   function GenericMatrix<T>(
     w: number,
     h: number,
     p: (x: number, y: number) => T,
   ): void;
+  export interface Node<T = any> {
+    n: number;
+    children: Node[];
+    data: T;
+  }
+  export interface TreeGenParams {
+    data?: any[];
+    startNum: number;
+    nextNum?: number;
+    numNodes: number;
+  }
+  export type NodeGen<T> = (
+    parent: Node | null,
+    nodeNum: number,
+    depth: number,
+    params: TreeGenParams,
+  ) => T | null;
+  function GenTreeDepth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T>;
+  function GenTreeBreadth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T>;
+  function BinaryTreeGen<T>(p: NodeGen<T>): NodeGen<T>;
+  function DfsFlattenTree(current: Node, nodes: Node[]): Node[];
+  function OutputTreeChildrenBinary(root: Node): void;
   function SetCpp(golden: string, test?: string): void;
   function SetWatchables(...golden: string[]): void;
   function SetCppFlags(flags: string): void;

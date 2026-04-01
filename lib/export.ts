@@ -1,6 +1,7 @@
 export * from "./Out.ts";
 export * from "./Random.ts";
-export * from "./Generate.ts";
+export * from "./Generate.ts"
+export * from "./Trees.ts";
 export * from "./Test.ts";
 export * from "./Config.ts";
 export { SubmitCode } from "./SubmitCode.ts";
