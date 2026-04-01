@@ -1,32 +1,28 @@
-import * as globals from './export.ts';
-import type { ConfigType } from './Config.ts';
+import * as globals from "./export.ts";
+import type { ConfigType } from "./Config.ts";
 
 let cppFiles: string[] = [];
 
-const MUST_RETURN_ITERABLE = new Set([
-  'ListInputFiles'
-]);
+const MUST_RETURN_ITERABLE = new Set(["ListInputFiles", "GenericPermutation"]);
 
-const LEAVE_AS_IS = new Set([
-  'SetConfig', 'ListSomeFiles'
-]);
+const LEAVE_AS_IS = new Set(["SetConfig", "ListSomeFiles"]);
 
-const OVERWRITE: Record<string, () => unknown> = { 'SubmitCode': () => true };
+const OVERWRITE: Record<string, () => unknown> = { SubmitCode: () => true };
 
 // Optionally avoid overwriting existing properties
 for (const [name, value] of Object.entries(globals)) {
-  if (name === 'SetCpp') {
+  if (name === "SetCpp") {
     (globalThis as Record<string, unknown>)[name] = (...args: string[]) => {
       cppFiles = [...cppFiles, ...args];
     };
-  }
-  else if (name === 'SetWatchables') {
+  } else if (name === "SetWatchables") {
     (globalThis as Record<string, unknown>)[name] = (...args: string[]) => {
       cppFiles = [...cppFiles, ...args];
     };
-  }
-  else if (MUST_RETURN_ITERABLE.has(name)) {
-    (globalThis as Record<string, unknown>)[name] = () => { return []; };
+  } else if (MUST_RETURN_ITERABLE.has(name)) {
+    (globalThis as Record<string, unknown>)[name] = () => {
+      return [];
+    };
   } else if (LEAVE_AS_IS.has(name)) {
     (globalThis as Record<string, unknown>)[name] = value;
   } else if (name in OVERWRITE) {
@@ -37,6 +33,11 @@ for (const [name, value] of Object.entries(globals)) {
 }
 
 globals.__initialize(globalThis);
-process.on('exit', () => {
-  console.log(JSON.stringify({ cppFiles, CFG: (globals as unknown as { CFG: ConfigType }).CFG }));
+process.on("exit", () => {
+  console.log(
+    JSON.stringify({
+      cppFiles,
+      CFG: (globals as unknown as { CFG: ConfigType }).CFG,
+    }),
+  );
 });

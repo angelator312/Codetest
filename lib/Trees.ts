@@ -71,24 +71,23 @@ export function GenTreeDepth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T> {
   return root;
 }
 
-export function GenTreeBreadth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T> {
+export function GenTreeBreadth<T>(
+  p: NodeGen<T>,
+  params: TreeGenParams,
+): Node<T> {
   let depth = 0;
   params.nextNum = params.startNum + 1;
   const root = {
     n: params.startNum,
     children: [],
-    data: p(null,  depth, params),
+    data: p(null, depth, params),
   };
   doGenTreeBreadth(root, p, depth + 1, params);
   return root;
 }
 
 export function BinaryTreeGen<T>(p: NodeGen<T>): NodeGen<T> {
-  return (
-    parent: Node | null,
-    depth: number,
-    params: TreeGenParams,
-  ) => {
+  return (parent: Node | null, depth: number, params: TreeGenParams) => {
     if (parent?.children.length >= 2) {
       return null;
     }
@@ -113,6 +112,25 @@ export function OutputTreeChildrenBinary(root: Node) {
     const l = node.children[0]?.n ?? 0;
     const r = node.children[1]?.n ?? 0;
     Out(`${l} ${r}`);
+    Eol();
+  }
+}
+export interface Edge {
+  u: number;
+  v: number;
+}
+function doDfsForEdges<T>(root: Node<T>, edges: Edge[]) {
+  for (const e of root.children) {
+    edges.push({ u: root.n, v: e.n });
+    doDfsForEdges(e, edges);
+  }
+  return edges;
+}
+export function OutputTreeEdges<T>(root: Node) {
+  let edges = doDfsForEdges<T>(root, []);
+  console.log(edges);
+  for (const { u, v } of edges) {
+    Out(`${u} ${v}`);
     Eol();
   }
 }

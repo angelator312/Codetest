@@ -46,7 +46,6 @@ declare global {
   }
   export type NodeGen<T> = (
     parent: Node | null,
-    nodeNum: number,
     depth: number,
     params: TreeGenParams,
   ) => T | null;
@@ -55,6 +54,12 @@ declare global {
   function BinaryTreeGen<T>(p: NodeGen<T>): NodeGen<T>;
   function DfsFlattenTree(current: Node, nodes: Node[]): Node[];
   function OutputTreeChildrenBinary(root: Node): void;
+  export interface Edge {
+    u: number;
+    v: number;
+  }
+  function doDfsForEdges<T>(root: Node<T>, edges: Edge[]): Edge[];
+  function OutputTreeEdges<T>(root: Node): void;
   function SetCpp(golden: string, test?: string): void;
   function SetWatchables(...golden: string[]): void;
   function SetCppFlags(flags: string): void;

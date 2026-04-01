@@ -5,7 +5,7 @@ export function Str(s: string): void {
   Out(s);
 }
 
-export function Int(n: number|string): void {
+export function Int(n: number | string): void {
   Str(n.toString());
 }
 
@@ -31,7 +31,11 @@ export function GenericSeq<T>(size: number, p: (i: number) => T): void {
  * @param h - height of matrix
  * @param p - function that generates single element
  */
-export function GenericMatrix<T>(w: number, h: number, p: (x: number, y: number) => T): void {
+export function GenericMatrix<T>(
+  w: number,
+  h: number,
+  p: (x: number, y: number) => T,
+): void {
   for (let x = 0; x < w; x++) {
     for (let y = 0; y < h; y++) {
       const v = p(x, y);
@@ -39,4 +43,15 @@ export function GenericMatrix<T>(w: number, h: number, p: (x: number, y: number)
     }
     Eol();
   }
+}
+
+export function GenericPermutation(n: number) {
+  let permutation = Array.from({ length: n }, (_, i) => i + 1);
+
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [permutation[i], permutation[j]] = [permutation[j], permutation[i]];
+  }
+
+  return permutation;
 }
