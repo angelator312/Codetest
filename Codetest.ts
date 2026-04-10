@@ -167,7 +167,7 @@ export async function runTest(): Promise<number> {
     );
     const { code } = await waitForProcess(childProcess);
     console.log(
-      `>>> ${testScriptPath} exited with code ${code === 0 ? chalk.green(code.toString()) : chalk.red(code.toString())}`,
+      `>>> ${testScriptPath} exited with code ${code === 0 ? chalk.green(code.toString()) : chalk.red(code?.toString())}`,
     );
     return code ?? 1;
   } catch (e) {
