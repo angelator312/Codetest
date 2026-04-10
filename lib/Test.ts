@@ -29,6 +29,9 @@ interface Iterators {
   [key: string]: IteratorRange;
 }
 
+class DiffError extends Error{
+}
+
 let iterators: Iterators = {};
 let iterKeys: string[] | undefined;
 let currentIterator: number[] | undefined;
@@ -231,7 +234,12 @@ export function TestSol(fileName: string): void {
     diff(solFileName, outputFileName, ERROR_FILE_NAME);
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
-    console.error(chalk.red("Test failed for: " + fileName));
+    if(e instanceof DiffError){
+      console.error(chalk.red("Test failed for: " + fileName));
+    } else {
+      console.error(chalk.red("Failed comparing output to solution: "));
+      console.error(e);
+    }
     process.exit(1);
   }
 }
@@ -258,7 +266,7 @@ function diff(file1: string, file2: string, errFileName: string): void {
     printColoredDiff(differences);
   }
   if (hasDiff) {
-    throw new Error("Test Failed");
+    throw new DiffError("Test Failed");
   }
 }
 
