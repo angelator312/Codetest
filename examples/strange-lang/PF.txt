@@ -1,0 +1,47 @@
+ReadInt
+Copy IN A
+Copy IN B
+Repeat
+ ReadChar
+ If IN Is =
+  If C Is 100
+   Add B A
+  EndIf
+  Stop
+ EndIf
+ If IN Is *
+  If C Is 0
+   Sub B A
+   Store 100 C
+  EndIf
+  If C Is 1
+   Sub B A
+   Store 100 C
+  EndIf
+ EndIf
+ If IN Is -
+  If C Is 100
+   Add B A
+  EndIf
+  Store 1 C
+ EndIf
+ If IN Is +
+  If C Is 100
+   Add B A
+  EndIf
+  Store 0 C
+ EndIf
+ ReadInt
+ If C Is 0
+  Copy IN B
+  Add IN A
+ EndIf
+ If C Is 1
+  Store 0 B
+  Sub IN B
+  Sub IN A
+ EndIf
+ If C Is 100
+  Mul IN B
+ EndIf
+Loop
