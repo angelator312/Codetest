@@ -29,7 +29,7 @@ interface Iterators {
   [key: string]: IteratorRange;
 }
 
-class DiffError extends Error{
+export class DiffError extends Error{
 }
 
 let iterators: Iterators = {};
@@ -205,7 +205,7 @@ export function ListSomeFiles(dirName: string, glob: string): string[] {
   return globSync(`${dirName}**/${glob}`);
 }
 
-export function TestSol(fileName: string): void {
+export function TestSol(fileName: string,checkerFunc?:(string,string,string)=>void): void {
   let { goldenCommand } = compileCommands({ goldenCommand: true });
 
   if (!goldenCommand) {
@@ -231,7 +231,8 @@ export function TestSol(fileName: string): void {
   }
   try {
     const solFileName = testFileBase + ".sol";
-    diff(solFileName, outputFileName, ERROR_FILE_NAME);
+    if (checkerFunc) checkerFunc(solFileName, outputFileName, ERROR_FILE_NAME);
+    else diff(solFileName, outputFileName, ERROR_FILE_NAME);
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
     if(e instanceof DiffError){
@@ -270,7 +271,7 @@ function diff(file1: string, file2: string, errFileName: string): void {
   }
 }
 
-function printColoredDiff(differences: { value: string; added?: boolean; removed?: boolean }[]): void {
+export function printColoredDiff(differences: { value: string; added?: boolean; removed?: boolean }[]): void {
   let oldLineNumber = 1;
   let newLineNumber = 1;
 

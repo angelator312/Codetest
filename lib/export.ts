@@ -4,6 +4,8 @@ export * from "./Generate.ts"
 export * from "./Trees.ts";
 export * from "./Test.ts";
 export * from "./Config.ts";
+export * from "./checkerHelpers/FileOperations.ts";
+export * from "./checkerHelpers/Math.ts";
 export { SubmitCode } from "./SubmitCode.ts";
 
 import { __initializeIterator } from "./Test.ts";
