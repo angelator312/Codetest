@@ -55,3 +55,10 @@ export function GenericPermutation(n: number) {
 
   return permutation;
 }
+
+export function GenerateArrayWithEqualNumberOfBrackets(n: number): string[] {
+  const perm = GenericPermutation(n);
+  let arr = Array(n).fill(")");
+  for (let i = 0; i < n / 2; ++i) arr[perm[i] - 1] = "(";
+  return arr;
+}
