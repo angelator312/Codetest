@@ -8,6 +8,7 @@ let itemSeparator = " ";
 let currentLine: string[] = [];
 
 export function SetOutput(fileName: string): void {
+  if (fileName.indexOf(".") == -1) throw Error("No extension of the output.");
   currentOutput = fs.openSync(fileName, "w");
   outputFileName = fileName;
 }

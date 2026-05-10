@@ -12,6 +12,7 @@ import { config } from "./lib/judges/Config.ts";
 import { SubmitCode } from "./lib/SubmitCode.ts";
 import { CommitCppWithDir } from "./utils/CommitDirs.ts";
 import copyTypes from "./utils/CopyTypes.ts";
+import copyDevJS from "./utils/CopyDevJS.ts";
 
 interface TestScriptConfig {
   cppFiles: string[];
@@ -94,6 +95,9 @@ if (args[0] === "--auth") {
     process.exit(1);
   }
   copyTypes(args[1]);
+  process.exit(0);
+}else if (args[0] === "--get-dev") {
+  copyDevJS("dev.js");
   process.exit(0);
 }
 

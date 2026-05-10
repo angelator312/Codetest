@@ -4,7 +4,13 @@ import { diffLines } from "diff";
 import chalk from "chalk";
 import { formatNanoseconds, runCommand } from "./utils.ts";
 import { CFG } from "./Config.ts";
-import { Fail, CloseOutput, GetOutput, SaveOutputAs, SetOutput } from "./Out.ts";
+import {
+  Fail,
+  CloseOutput,
+  GetOutput,
+  SaveOutputAs,
+  SetOutput,
+} from "./Out.ts";
 import path from "node:path";
 import os from "node:os";
 
@@ -18,7 +24,12 @@ let cppFlags: string | undefined;
 let goldenCommandCpp: string | undefined;
 let testCommandCpp: string | undefined;
 let timeoutMs: number | undefined;
-const ERROR_FILE_NAME = path.join(os.homedir(), ".config", "codetest", "last.err");
+const ERROR_FILE_NAME = path.join(
+  os.homedir(),
+  ".config",
+  "codetest",
+  "last.err",
+);
 
 interface IteratorRange {
   min: number;
@@ -29,8 +40,7 @@ interface Iterators {
   [key: string]: IteratorRange;
 }
 
-export class DiffError extends Error{
-}
+export class DiffError extends Error {}
 
 let iterators: Iterators = {};
 let iterKeys: string[] | undefined;
@@ -51,7 +61,10 @@ function compileCommand(key: string, cppFile: string): Record<string, string> {
   return { [key]: command };
 }
 
-function compileCommands(select?: { goldenCommand?: boolean; testCommand?: boolean }): Commands {
+function compileCommands(select?: {
+  goldenCommand?: boolean;
+  testCommand?: boolean;
+}): Commands {
   if (
     !commands ||
     (select?.goldenCommand && !commands.goldenCommand) ||
@@ -85,8 +98,7 @@ export function SetCpp(golden: string, test?: string): void {
   goldenCommandCpp = golden;
   testCommandCpp = test;
 }
-export function SetWatchables(...golden: string[]): void {
-}
+export function SetWatchables(...golden: string[]): void {}
 
 export function SetCppFlags(flags: string): void {
   cppFlags = flags;
@@ -115,9 +127,21 @@ export function Test(): void {
   const solFileName = outputFileName.replace(/\.[^.]+$/, ".sol");
   const outFileName = outputFileName.replace(/\.[^.]+$/, ".out");
   let startGold = process.hrtime.bigint();
-  runCommand(`./${goldenCommand}`, outputFileName, solFileName, timeoutMs ?? 0, os.devNull);
+  runCommand(
+    `./${goldenCommand}`,
+    outputFileName,
+    solFileName,
+    timeoutMs ?? 0,
+    os.devNull,
+  );
   let endGold = process.hrtime.bigint();
-  runCommand(`./${testCommand}`, outputFileName, outFileName, timeoutMs ?? 0, ERROR_FILE_NAME);
+  runCommand(
+    `./${testCommand}`,
+    outputFileName,
+    outFileName,
+    timeoutMs ?? 0,
+    ERROR_FILE_NAME,
+  );
   let endTest = process.hrtime.bigint();
   if (CFG.verbose) {
     console.log(
@@ -139,12 +163,18 @@ export function Test(): void {
     }
     SetOutput(outputFileName); // reopen output file
   } catch (e) {
-    console.error("Test failed " + solFileName + " " + outFileName + " " + outputFileName);
+    console.error(
+      "Test failed " + solFileName + " " + outFileName + " " + outputFileName,
+    );
     process.exit(1);
   }
 }
 
-export function __initializeIterator(name: string, min: number, max: number): void {
+export function __initializeIterator(
+  name: string,
+  min: number,
+  max: number,
+): void {
   iterators[name] = { min, max };
 }
 
@@ -205,7 +235,10 @@ export function ListSomeFiles(dirName: string, glob: string): string[] {
   return globSync(`${dirName}**/${glob}`);
 }
 
-export function TestSol(fileName: string,checkerFunc?:(string,string,string)=>void): void {
+export function TestSol(
+  fileName: string,
+  checkerFunc?: (f1: string, f2: string, err: string, fin: string) => void,
+): void {
   let { goldenCommand } = compileCommands({ goldenCommand: true });
 
   if (!goldenCommand) {
@@ -223,7 +256,9 @@ export function TestSol(fileName: string,checkerFunc?:(string,string,string)=>vo
     outputFileName,
     timeoutMs ?? 0,
     ERROR_FILE_NAME,
-    ()=>{console.error(readFileSync(ERROR_FILE_NAME).toString())}
+    () => {
+      console.error(readFileSync(ERROR_FILE_NAME).toString());
+    },
   );
   let endGold = process.hrtime.bigint();
   if (CFG.verbose) {
@@ -231,11 +266,12 @@ export function TestSol(fileName: string,checkerFunc?:(string,string,string)=>vo
   }
   try {
     const solFileName = testFileBase + ".sol";
-    if (checkerFunc) checkerFunc(solFileName, outputFileName, ERROR_FILE_NAME);
+    if (checkerFunc)
+      checkerFunc(solFileName, outputFileName, ERROR_FILE_NAME, fileName);
     else diff(solFileName, outputFileName, ERROR_FILE_NAME);
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
-    if(e instanceof DiffError){
+    if (e instanceof DiffError) {
       console.error(chalk.red("Test failed for: " + fileName));
     } else {
       console.error(chalk.red("Failed comparing output to solution: "));
@@ -262,8 +298,7 @@ function diff(file1: string, file2: string, errFileName: string): void {
   });
   const hasDiff = differences.some((c) => c.added || c.removed);
   if (hasDiff) {
-    if (errFileName)
-      process.stderr.write(readFileSync(errFileName).toString());
+    if (errFileName) process.stderr.write(readFileSync(errFileName).toString());
     printColoredDiff(differences);
   }
   if (hasDiff) {
@@ -271,7 +306,9 @@ function diff(file1: string, file2: string, errFileName: string): void {
   }
 }
 
-export function printColoredDiff(differences: { value: string; added?: boolean; removed?: boolean }[]): void {
+export function printColoredDiff(
+  differences: { value: string; added?: boolean; removed?: boolean }[],
+): void {
   let oldLineNumber = 1;
   let newLineNumber = 1;
 

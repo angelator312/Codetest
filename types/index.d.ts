@@ -34,6 +34,7 @@ declare global {
     h: number,
     p: (x: number, y: number) => T,
   ): void;
+  function GenericPermutation(n: number): number[];
   export interface Node<T = any> {
     n: number;
     children: Node[];
@@ -67,8 +68,8 @@ declare global {
     u: number;
     v: number;
   }
-  function doDfsForEdges<T>(root: Node<T>, edges: Edge[]): Edge[];
   function OutputTreeEdges<T>(root: Node): void;
+  class DiffError extends Error {}
   function SetCpp(golden: string, test?: string): void;
   function SetWatchables(...golden: string[]): void;
   function SetCppFlags(flags: string): void;
@@ -78,7 +79,17 @@ declare global {
   function NextCase(): boolean;
   function ListInputFiles(dirName: string): string[];
   function ListSomeFiles(dirName: string, glob: string): string[];
-  function TestSol(fileName: string): void;
+  function TestSol(
+    fileName: string,
+    checkerFunc?: (f1: string, f2: string, err: string, fin: string) => void,
+  ): void;
+  function printColoredDiff(
+    differences: {
+      value: string;
+      added?: boolean;
+      removed?: boolean;
+    }[],
+  ): void;
   export interface ConfigType {
     verbose: boolean;
     keepInputFiles: boolean;
@@ -86,6 +97,8 @@ declare global {
   }
   const CFG: ConfigType;
   function SetConfig(cfg: Partial<ConfigType>): void;
+  function GetFileAs2DArrayOfNumbers(file: string): number[][];
+  function GetFileAsArrayOfNumbers(file: string): number[];
   export interface SubmitOptions {
     openBrowser?: boolean;
   }
