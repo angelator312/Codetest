@@ -6,12 +6,12 @@ import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 import chalk from "chalk";
 import { execFileSync } from "node:child_process";
-import { Setup } from "./utils/Commands.ts";
-import { judges } from "./lib/judges/JudgeRegistry.ts";
-import { config } from "./lib/judges/Config.ts";
-import { SubmitCode } from "./lib/SubmitCode.ts";
-import { CommitCppWithDir } from "./utils/CommitDirs.ts";
-import copyTypes from "./utils/CopyTypes.ts";
+import { Setup } from "../utils/Commands.ts";
+import { judges } from "../lib/judges/JudgeRegistry.ts";
+import { config } from "../lib/judges/Config.ts";
+import { SubmitCode } from "../lib/SubmitCode.ts";
+import { CommitCppWithDir } from "../utils/CommitDirs.ts";
+import copyTypes from "../utils/CopyTypes.ts";
 
 interface TestScriptConfig {
   cppFiles: string[];
@@ -93,7 +93,7 @@ if (args[0] === "--auth") {
     console.error("You need to specify where to copy");
     process.exit(1);
   }
-  copyTypes(args[1]);
+  await copyTypes(args[1]);
   process.exit(0);
 }
 
@@ -110,6 +110,7 @@ let testScriptDir = dirname(testScriptPath);
 if (!fs.existsSync(testScriptPath)) {
   const stdTestFile = join(
     import.meta.dirname,
+    "..",
     "stdTest",
     testScriptPath + ".js",
   );
@@ -120,6 +121,10 @@ if (!fs.existsSync(testScriptPath)) {
     console.error(`Test script ${testScriptPath} does not exist.`);
     process.exit(1);
   }
+}
+
+if(!testScriptPath.startsWith('/') && !testScriptPath.startsWith('.')) {
+  testScriptPath = `./${testScriptPath}`;
 }
 
 const configFromScript: TestScriptConfig = {
@@ -157,13 +162,14 @@ export async function runTest(): Promise<number> {
     );
     childProcess = spawn(
       process.execPath,
-      [
-        "--import",
-        pathToFileURL(join(import.meta.dirname, "lib", "loader.ts")).href,
-        testScriptPath,
-        ...args,
-      ],
-      { stdio: "inherit" },
+      args,
+      {
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          CODETEST_ENTRYPOINT: testScriptPath,
+        },
+      },
     );
     const { code } = await waitForProcess(childProcess);
     console.log(
@@ -194,13 +200,13 @@ async function waitForProcess(
 
 function getConfigFromScript(): TestScriptConfig {
   try {
-    const stdout = execFileSync(process.execPath, [
-      "--import",
-      pathToFileURL(join(import.meta.dirname, "lib", "cpp-deps-loader.ts"))
-        .href,
-      testScriptPath,
-      ...args,
-    ]);
+    const stdout = execFileSync(process.execPath, args, {
+      env: {
+        ...process.env,
+        CODETEST_LOADER: "cpp-deps",
+        CODETEST_ENTRYPOINT: testScriptPath,
+      }
+    });
     try {
       return JSON.parse(stdout.toString()) as TestScriptConfig;
     } catch {

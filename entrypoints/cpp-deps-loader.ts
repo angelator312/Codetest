@@ -1,5 +1,5 @@
-import * as globals from "./export.ts";
-import type { ConfigType } from "./Config.ts";
+import * as globals from "../lib/export.ts";
+import type { ConfigType } from "../lib/Config.ts";
 
 let cppFiles: string[] = [];
 
@@ -41,3 +41,6 @@ process.on("exit", () => {
     }),
   );
 });
+
+// Run the actual app
+await import(process.env.CODETEST_ENTRYPOINT);

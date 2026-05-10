@@ -2,7 +2,7 @@ import chalk from "chalk";
 import readline from "readline";
 import { SubmitCode } from "../lib/SubmitCode.ts";
 import { CommitCppWithDir, CommitFiles } from "./CommitDirs.ts";
-import { runTest } from "../Codetest.ts";
+import { runTest } from "../entrypoints/Codetest.ts";
 import { join } from "path";
 
 const sendShortcut = "f";

@@ -205,7 +205,7 @@ export function ListSomeFiles(dirName: string, glob: string): string[] {
   return globSync(`${dirName}**/${glob}`);
 }
 
-export function TestSol(fileName: string,checkerFunc?:(string,string,string)=>void): void {
+export function TestSol(fileName: string,checkerFunc?:(sol:string,out:string,err:string)=>void): void {
   let { goldenCommand } = compileCommands({ goldenCommand: true });
 
   if (!goldenCommand) {
