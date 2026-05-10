@@ -12,6 +12,7 @@ export function GetFileAsArrayOfNumbers(file: string): number[] {
     .split("\n")
     .flatMap((e) => e.split(" "))
     .map((e2) => parseInt(e2, 10));
+
 }
 type OptionalSequence =
   | {
