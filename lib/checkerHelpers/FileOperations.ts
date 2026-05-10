@@ -41,6 +41,7 @@ export function GetFileAsArrayOfOptionalSequences(
 type TestCaseLines = string[];
 interface SimpleTestCase {
   n: number;
+<<<<<<< HEAD
   line: string;
 }
 export function GetFileAsArrayOfSimpleTestCases(file: string) {
@@ -87,3 +88,8 @@ function binary_search(p:number[], n:number, target:number) :bool{
   else return false;
 }
 */
+=======
+  lines: TestCaseLines;
+}
+// export function GetFileAsArrayOfOptionalSequences(){}
+>>>>>>> 1ea04d8 (added copy dev js and some helpers)
