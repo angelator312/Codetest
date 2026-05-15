@@ -108,7 +108,9 @@ export function SetTimeout(toMs: number): void {
   timeoutMs = toMs;
 }
 
-export function Test(): void {
+export function Test(
+  checkerFunc?: (f1: string, f2: string, err: string, fin: string) => void,
+): void {
   CloseOutput();
   const outputFileName = GetOutput();
 
@@ -151,8 +153,10 @@ export function Test(): void {
     );
   }
   try {
-    diff(solFileName, outFileName, ERROR_FILE_NAME);
-
+    // diff(solFileName, outFileName, ERROR_FILE_NAME);
+    if (checkerFunc)
+      checkerFunc(solFileName, outFileName, ERROR_FILE_NAME, outputFileName);
+    else diff(solFileName, outFileName, ERROR_FILE_NAME);
     if (CFG.verbose) {
       console.log("Test passed for: " + currentIteratorDescription());
     }

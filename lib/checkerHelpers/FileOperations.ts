@@ -3,7 +3,7 @@ export function GetFileAs2DArrayOfNumbers(file: string): number[][] {
   const f = readFileSync(file, "utf8");
   return f
     .split("\n")
-    .map((e) => e.split(" "))
+    .map((e) => e.split(" ").filter((e) => e.length))
     .map((e) => e.map((e2) => parseInt(e2, 10)));
 }
 export function GetFileAsArrayOfNumbers(file: string): number[] {
@@ -41,6 +41,49 @@ export function GetFileAsArrayOfOptionalSequences(
 type TestCaseLines = string[];
 interface SimpleTestCase {
   n: number;
-  lines: TestCaseLines;
+  line: string;
 }
+export function GetFileAsArrayOfSimpleTestCases(file: string) {
+  const lines: string[] = readFileSync(file, "utf8").split(
+    "\n",
+  ); /* edin element edin red ot faila */
+  const [specialen, ...groups] = lines;
+  let groupLines = groups;
+  const out:SimpleTestCase[] = [];
+  while (groupLines.length) {
+    const [red1, red2, ...rest] = groupLines;
+    out.push({n:parseInt(red1,10), line:red2});
+    groupLines = rest;
+  }
+  // console.log(out);
+  return out;
+}
+//
+/* (
+  (tests[i].line[j] == "1") != binary_search(f2[i], tests[i].n, j + 1),
+);
+number - float
 // export function GetFileAsArrayOfOptionalSequences(){}
+/*
+T
+N
+10101010101010100101
+11010010101010100101
+for i in 1..n s2+=bs(i)
+N
+
+out:
+permutation(N)
+
+function binary_search(p:number[], n:number, target:number) :bool{
+  let left = 0, right = n - 1;
+  while (left < right) {
+    let mid = (left + right) / 2;
+    if (p[mid] == target) return true;
+    else if (p[mid] < target) left = mid + 1;
+    else right = mid - 1;
+  }
+  if (p[left] == target) return true;
+  else return false;
+}
+*/
