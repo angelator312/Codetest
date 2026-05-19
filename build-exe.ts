@@ -16,7 +16,7 @@ const result = await Bun.build({
     // We need to include types file contant as define, becaseu bun atumatically compiles it to javascript
     // which makes it unavailable at runtime
     "__TYPES_CONTENT__": JSON.stringify(typesContent),
-  },  
+  },
   metafile: !process.env.BUN_TARGET, // Write metafile only when biulding locally ( no target )
   compile: {
     ...(process.env.BUN_TARGET ? { target: process.env.BUN_TARGET as Bun.Build.CompileTarget } : {}),
