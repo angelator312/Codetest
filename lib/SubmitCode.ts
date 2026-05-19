@@ -1,7 +1,8 @@
 import { config } from "./judges/Config.ts";
 import { CodeParse } from "./judges/CodeParser.ts";
 import { exec } from "child_process";
-import type {  SubmissionResponse } from "./judges/BaseJudge.ts";
+import type { SubmissionResponse } from "./judges/BaseJudge.ts";
+import { IsThereACerr } from "./SearchForCerr.ts";
 
 interface SubmitOptions {
   openBrowser?: boolean;
@@ -9,7 +10,10 @@ interface SubmitOptions {
 
 const defaultOptions: Required<SubmitOptions> = { openBrowser: true };
 
-export async function SubmitCode(filePath: string, options: SubmitOptions = {}): Promise<boolean> {
+export async function SubmitCode(
+  filePath: string,
+  options: SubmitOptions = {},
+): Promise<boolean> {
   // returning true on no problems, false - if there some problems
   const opts = { ...defaultOptions, ...options };
   console.log(`\n📤 Submitting ${filePath}...`);
@@ -25,19 +29,25 @@ export async function SubmitCode(filePath: string, options: SubmitOptions = {}):
       console.log(`   Run: codetest --auth ${judge.name.toLowerCase()}`);
       return false;
     }
-
+    if (IsThereACerr(code)) {
+      console.error("There's a cerr in the code.");
+      return;
+    }
     // Submit
     let response = await judge.submit(code, problemId, credentials);
 
     // Check if response is an HTTP response with status
-    const hasStatus = typeof response === 'object' && response !== null && 'status' in response;
+    const hasStatus =
+      typeof response === "object" && response !== null && "status" in response;
     const status = hasStatus ? (response as SubmissionResponse).status : 0;
 
     if (
       (status === 403 || status === 401) &&
       typeof judge.reloadAuth === "function"
     ) {
-      const cred = await judge.reloadAuth(config.getJudgeCredentials(judge.name));
+      const cred = await judge.reloadAuth(
+        config.getJudgeCredentials(judge.name),
+      );
       console.log("Reloaded Auth");
       config.setJudgeCredentials(judge.name, cred);
       response = await judge.submit(code, problemId, cred);

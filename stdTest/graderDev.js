@@ -6,7 +6,7 @@ SetConfig({ watch: true });
 SetWatchables(CPP, CPP.replace(getExtensionRegex, ".d/*.in"));
 SetWatchables(CPP, CPP.replace(getExtensionRegex, ".d/*.sol"));
 SetWatchables(CPP, CPP.replace(getExtensionRegex, ".h"));
-SetCpp(CPP.replace(getExtensionRegex, "Grader.cpp"));
+SetCpp(global.GRADER ?? CPP.replace(getExtensionRegex, "Grader.cpp"));
 
 SetCppFlags("-DMYFLAG");
 SetTimeout(5000);
