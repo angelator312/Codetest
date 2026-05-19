@@ -1,4 +1,6 @@
-import { Eol, Out } from "./Out.ts";
+import { GenericSeq } from "./Generate.ts";
+import { Eol, Out, SetItemSeparator } from "./Out.ts";
+import { MinMax } from "./Random.ts";
 
 export interface Node<T = any> {
   n: number;
@@ -33,13 +35,13 @@ export class TreeGenState implements TreeGenParams {
     return this.state[key];
   }
 
-  getState(key: string , prevKey?: string) {
+  getState(key: string, prevKey?: string) {
     if (!this.state[key]) {
-      this.state[key] = (prevKey && this.state[prevKey]) ? { ...this.state[prevKey] } : {};
+      this.state[key] =
+        prevKey && this.state[prevKey] ? { ...this.state[prevKey] } : {};
     }
     return this.state[key];
   }
-
 }
 
 export type NodeGen<T> = (
@@ -90,7 +92,7 @@ function doGenTreeBreadth<T>(
 
 export function GenTreeDepth<T>(p: NodeGen<T>, params: TreeGenParams): Node<T> {
   let depth = 0;
-  const state = new TreeGenState(params)
+  const state = new TreeGenState(params);
   const root = {
     n: state.startNum,
     children: [],
@@ -106,7 +108,7 @@ export function GenTreeBreadth<T>(
   params: TreeGenParams,
 ): Node<T> {
   let depth = 0;
-  const state = new TreeGenState(params)
+  const state = new TreeGenState(params);
   const root = {
     n: params.startNum,
     children: [],
@@ -117,11 +119,7 @@ export function GenTreeBreadth<T>(
 }
 
 export function BinaryTreeGen<T>(p: NodeGen<T>): NodeGen<T> {
-  return (
-    parent: Node | null,
-    depth: number,
-    params: TreeGenState,
-  ) => {
+  return (parent: Node | null, depth: number, params: TreeGenState) => {
     if (parent?.children.length >= 2) {
       return null;
     }
@@ -160,6 +158,13 @@ function doDfsForEdges<T>(root: Node<T>, edges: Edge[]) {
   }
   return edges;
 }
+function doDfsForParents<T>(root: Node<T>, parents: number[]) {
+  for (const e of root.children) {
+    parents[e.n] = root.n;
+    doDfsForParents(e, parents);
+  }
+  return parents;
+}
 export function OutputTreeEdges<T>(root: Node) {
   let edges = doDfsForEdges<T>(root, []);
   console.log(edges);
@@ -167,4 +172,17 @@ export function OutputTreeEdges<T>(root: Node) {
     Out(`${u} ${v}`);
     Eol();
   }
+}
+export function OutputTreeParents<T>(root: Node) {
+  let Parents = doDfsForParents<T>(root, []);
+  // console.log(Parents);
+  for (const u of Parents) {
+    if (u) Out(`${u}`);
+  }
+  Eol();
+}
+export function OutputTreeParentsCheapWay(n: number) {
+  SetItemSeparator(" ");
+  console.log("ST")
+  GenericSeq(n - 1, (i) => MinMax(1, i+1));
 }

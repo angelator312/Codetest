@@ -1,17 +1,18 @@
 export * from "./Out.ts";
 export * from "./Random.ts";
-export * from "./Generate.ts"
+export * from "./Generate.ts";
 export * from "./Trees.ts";
 export * from "./Test.ts";
 export * from "./Config.ts";
 export * from "./checkerHelpers/FileOperations.ts";
 export * from "./checkerHelpers/Math.ts";
+export { diffLines } from "diff";
 export { SubmitCode } from "./SubmitCode.ts";
 
 import { __initializeIterator } from "./Test.ts";
 import { CFG } from "./Config.ts";
 import { CommandFailure, Failure } from "./utils.ts";
-import chalk from 'chalk';
+import chalk from "chalk";
 
 export function __initialize(globalObject: typeof globalThis): void {
   for (const v of process.argv.slice(2)) {
@@ -43,8 +44,12 @@ export function __initialize(globalObject: typeof globalThis): void {
     }
   }
 
-  process.on('uncaughtException', (err) => {
-    if (!CFG.verbose || err instanceof Failure || err instanceof CommandFailure) {
+  process.on("uncaughtException", (err) => {
+    if (
+      !CFG.verbose ||
+      err instanceof Failure ||
+      err instanceof CommandFailure
+    ) {
       console.error(chalk.red(err.message));
     } else {
       console.error(chalk.red(err));
