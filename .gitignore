@@ -4,6 +4,8 @@ node_modules
 .debug
 *.err
 
+dist/
+
 # TypeScript
 *.tsbuildinfo
 *.tsbuildinfo.*

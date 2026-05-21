@@ -1,4 +1,4 @@
-import * as globals from './export.ts';
+import * as globals from '../lib/export.ts';
 
 // Optionally avoid overwriting existing properties
 for (const [name, value] of Object.entries(globals)) {
@@ -6,3 +6,6 @@ for (const [name, value] of Object.entries(globals)) {
 }
 
 globals.__initialize(globalThis);
+
+// Run the actual app
+await import(process.env.CODETEST_ENTRYPOINT);

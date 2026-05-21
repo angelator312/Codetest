@@ -12,6 +12,7 @@ export function GetFileAsArrayOfNumbers(file: string): number[] {
     .split("\n")
     .flatMap((e) => e.split(" "))
     .map((e2) => parseInt(e2, 10));
+
 }
 type OptionalSequence =
   | {
@@ -58,32 +59,3 @@ export function GetFileAsArrayOfSimpleTestCases(file: string) {
   // console.log(out);
   return out;
 }
-//
-/* (
-  (tests[i].line[j] == "1") != binary_search(f2[i], tests[i].n, j + 1),
-);
-number - float
-// export function GetFileAsArrayOfOptionalSequences(){}
-/*
-T
-N
-10101010101010100101
-11010010101010100101
-for i in 1..n s2+=bs(i)
-N
-
-out:
-permutation(N)
-
-function binary_search(p:number[], n:number, target:number) :bool{
-  let left = 0, right = n - 1;
-  while (left < right) {
-    let mid = (left + right) / 2;
-    if (p[mid] == target) return true;
-    else if (p[mid] < target) left = mid + 1;
-    else right = mid - 1;
-  }
-  if (p[left] == target) return true;
-  else return false;
-}
-*/
