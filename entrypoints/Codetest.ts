@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn, ChildProcess } from "child_process";
 import chokidar from "chokidar";
-import { join, dirname } from "path";
+import { join, dirname, isAbsolute } from "path";
 import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 import chalk from "chalk";
@@ -13,6 +13,13 @@ import { SubmitCode } from "../lib/SubmitCode.ts";
 import { CommitCppWithDir } from "../utils/CommitDirs.ts";
 import copyTypes from "../utils/CopyTypes.ts";
 import copyDevJS from "../utils/CopyDevJS.ts";
+import { isBunSingleExecutable } from "../utils/Bun.ts";
+import { resolve } from "node:path";
+
+const MAIN_ENTRYPOINT = join(
+  import.meta.dirname,
+  "main.ts"
+);
 
 interface TestScriptConfig {
   cppFiles: string[];
@@ -127,8 +134,12 @@ if (!fs.existsSync(testScriptPath)) {
   }
 }
 
-if(!testScriptPath.startsWith('/') && !testScriptPath.startsWith('.')) {
-  testScriptPath = `./${testScriptPath}`;
+if(isBunSingleExecutable()){
+  if (!testScriptPath.startsWith('/') && !testScriptPath.startsWith('.')) {
+    testScriptPath = `./${testScriptPath}`;
+  }
+} else if (!isAbsolute(testScriptPath)) {
+  testScriptPath = resolve(testScriptPath);
 }
 
 const configFromScript: TestScriptConfig = {
@@ -166,7 +177,7 @@ export async function runTest(): Promise<number> {
     );
     childProcess = spawn(
       process.execPath,
-      args,
+      [...(isBunSingleExecutable() ? [] : [MAIN_ENTRYPOINT]), ...args],
       {
         stdio: "inherit",
         env: {
@@ -204,7 +215,7 @@ async function waitForProcess(
 
 function getConfigFromScript(): TestScriptConfig {
   try {
-    const stdout = execFileSync(process.execPath, args, {
+    const stdout = execFileSync(process.execPath, [...(isBunSingleExecutable() ? [] : [MAIN_ENTRYPOINT]), ...args], {
       env: {
         ...process.env,
         CODETEST_LOADER: "cpp-deps",
