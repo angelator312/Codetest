@@ -12,7 +12,6 @@ export function GetFileAsArrayOfNumbers(file: string): number[] {
     .split("\n")
     .flatMap((e) => e.split(" "))
     .map((e2) => parseInt(e2, 10));
-
 }
 type OptionalSequence =
   | {
@@ -50,12 +49,16 @@ export function GetFileAsArrayOfSimpleTestCases(file: string) {
   ); /* edin element edin red ot faila */
   const [specialen, ...groups] = lines;
   let groupLines = groups;
-  const out:SimpleTestCase[] = [];
+  const out: SimpleTestCase[] = [];
   while (groupLines.length) {
     const [red1, red2, ...rest] = groupLines;
-    out.push({n:parseInt(red1,10), line:red2});
+    out.push({ n: parseInt(red1, 10), line: red2 });
     groupLines = rest;
   }
   // console.log(out);
   return out;
+}
+
+export function PrintFile(errFileName = "") {
+  if (errFileName) process.stderr.write(readFileSync(errFileName).toString());
 }

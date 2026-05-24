@@ -62,3 +62,13 @@ export function GenerateArrayWithEqualNumberOfBrackets(n: number): string[] {
   for (let i = 0; i < n / 2; ++i) arr[perm[i] - 1] = "(";
   return arr;
 }
+
+export function GenerateRandomString(
+  len: number,
+  alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+): string {
+  const chars = alphabet.split("");
+  const str = Array.from({ length: len }, () =>Choice(...chars));
+  // console.log(str);
+  return str.join("");
+}
