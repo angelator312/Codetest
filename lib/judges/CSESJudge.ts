@@ -155,13 +155,13 @@ export class CSESJudge extends Judge {
 
     // Try common hidden input patterns first (robust to attribute ordering and quoting)
     let m =
-      html.match(/<input[^>]*name=["']csrf_token["'][^>]*value=["']([a-z0-9]{16,64})["'][^>]*>/i) ||
-      html.match(/<input[^>]*value=["']([a-z0-9]{16,64})["'][^>]*name=["']csrf_token["'][^>]*>/i) ||
-      html.match(/<meta[^>]*name=["']csrf-token["'][^>]*content=["']([a-z0-9]{16,64})["'][^>]*>/i);
+      html.match(/<input[^>]*name=["']csrf_token["'][^>]*value=["']([a-zA-Z0-9_-]{8,128})["'][^>]*>/i) ||
+      html.match(/<input[^>]*value=["']([a-zA-Z0-9_-]{8,128})["'][^>]*name=["']csrf_token["'][^>]*>/i) ||
+      html.match(/<meta[^>]*name=["']csrf-token["'][^>]*content=["']([a-zA-Z0-9_-]{8,128})["'][^>]*>/i);
 
     if (!m) {
       // Fallback: any occurrence like csrf_token=... or csrf_token "..."
-      m = html.match(/csrf_token[^=>"']{0,10}=?\s*["']?([a-z0-9]{16,64})["']?/i);
+      m = html.match(/csrf_token\s*[=:]\s*["']?\s*([a-zA-Z0-9_-]{8,128})\s*["']?/i);
     }
 
     return m ? m[1] : null;
