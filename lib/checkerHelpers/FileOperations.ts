@@ -6,6 +6,10 @@ export function GetFileAs2DArrayOfNumbers(file: string): number[][] {
     .map((e) => e.split(" ").filter((e) => e.length))
     .map((e) => e.map((e2) => parseInt(e2, 10)));
 }
+export function GetFileAsArrayOfStrings(file: string): string[] {
+  const f = readFileSync(file, "utf8");
+  return f.split("\n");
+}
 export function GetFileAsArrayOfNumbers(file: string): number[] {
   const f = readFileSync(file, "utf8");
   return f
@@ -43,6 +47,11 @@ interface SimpleTestCase {
   n: number;
   line: string;
 }
+interface Simple2TestCase {
+  n: number;
+  k: number;
+  line: string;
+}
 export function GetFileAsArrayOfSimpleTestCases(file: string) {
   const lines: string[] = readFileSync(file, "utf8").split(
     "\n",
@@ -53,6 +62,25 @@ export function GetFileAsArrayOfSimpleTestCases(file: string) {
   while (groupLines.length) {
     const [red1, red2, ...rest] = groupLines;
     out.push({ n: parseInt(red1, 10), line: red2 });
+    groupLines = rest;
+  }
+  // console.log(out);
+  return out;
+}
+export function GetFileAsArrayOfSimple2TestCases(file: string) {
+  const lines: string[] = readFileSync(file, "utf8").split(
+    "\n",
+  ); /* edin element edin red ot faila */
+  const [specialen, ...groups] = lines;
+  let groupLines = groups;
+  const out: Simple2TestCase[] = [];
+  while (groupLines.length) {
+    const [red1, red2, ...rest] = groupLines;
+    out.push({
+      n: parseInt(red1.split(" ")[0], 10),
+      line: red2,
+      k: parseInt(red1.split(" ")[1], 10),
+    });
     groupLines = rest;
   }
   // console.log(out);
