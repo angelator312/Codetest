@@ -276,6 +276,7 @@ export function TestSol(
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
     if (e instanceof DiffError) {
+      console.log(e.message)
       console.error(chalk.red("Test failed for: " + fileName));
     } else {
       console.error(chalk.red("Failed comparing output to solution: "));
