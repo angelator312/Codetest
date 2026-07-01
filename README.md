@@ -33,6 +33,12 @@ The script will run the tests(from the DIR or `nameOfCPP.d`) and compare the out
 Tests starting whith '.someName' are ignored.
 See example folder.
 
+#### Params
+
+- CPP - which file to run
+- DIR - which directory to look for tests(cppname.d)
+- TIME - how many ms to wait the program before gracefully terminating her
+
 ### Options
 
 Options can be specified in any order.
