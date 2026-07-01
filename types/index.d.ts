@@ -14,6 +14,7 @@ declare global {
   function DirLog(o: any, depth?: number): void;
   function Seed(seed: number): void;
   function MinMax(min: number, max: number): number;
+  function Shuffle<T>(arr: T[]): T[];
   function Str(s: string): void;
   function Int(n: number | string): void;
   function Choice<T>(...choices: T[]): T;
@@ -35,6 +36,8 @@ declare global {
     p: (x: number, y: number) => T,
   ): void;
   function GenericPermutation(n: number): number[];
+  function GenerateArrayWithEqualNumberOfBrackets(n: number): string[];
+  function GenerateRandomString(len: number, alphabet?: string): string;
   export interface Node<T = any> {
     n: number;
     children: Node[];
@@ -69,12 +72,16 @@ declare global {
     v: number;
   }
   function OutputTreeEdges<T>(root: Node): void;
+  function OutputTreeParents<T>(root: Node): void;
+  function OutputTreeParentsCheapWay(n: number): void;
   class DiffError extends Error {}
   function SetCpp(golden: string, test?: string): void;
   function SetWatchables(...golden: string[]): void;
   function SetCppFlags(flags: string): void;
   function SetTimeout(toMs: number): void;
-  function Test(): void;
+  function Test(
+    checkerFunc?: (f1: string, f2: string, err: string, fin: string) => void,
+  ): void;
   function __initializeIterator(name: string, min: number, max: number): void;
   function NextCase(): boolean;
   function ListInputFiles(dirName: string): string[];
@@ -98,7 +105,29 @@ declare global {
   const CFG: ConfigType;
   function SetConfig(cfg: Partial<ConfigType>): void;
   function GetFileAs2DArrayOfNumbers(file: string): number[][];
+  function GetFileAsArrayOfStrings(file: string): string[];
   function GetFileAsArrayOfNumbers(file: string): number[];
+  export type OptionalSequence =
+    | {
+        is_ok: 1;
+        sequence: number[];
+      }
+    | {
+        is_ok: 0;
+      };
+  function GetFileAsArrayOfOptionalSequences(file: string): OptionalSequence[];
+  export interface SimpleTestCase {
+    n: number;
+    line: string;
+  }
+  export interface Simple2TestCase {
+    n: number;
+    k: number;
+    line: string;
+  }
+  function GetFileAsArrayOfSimpleTestCases(file: string): SimpleTestCase[];
+  function GetFileAsArrayOfSimple2TestCases(file: string): Simple2TestCase[];
+  function PrintFile(errFileName?: string): void;
   export interface SubmitOptions {
     openBrowser?: boolean;
   }
