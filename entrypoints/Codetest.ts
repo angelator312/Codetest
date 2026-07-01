@@ -60,14 +60,14 @@ if (args[0] === "--auth") {
     }
     config.setJudgeCredentials(judge.name, { token });
     console.log(` ${judge.name} credentials saved`);
-  } else if (judge.name === "Pesho") {
+  } else if (judge.name === "Pesho" || judge.name === "Cert") {
     const [username, password] = args.slice(2);
     if (!username || !password) {
-      console.error("Usage: codetest --auth pesho <username> <password>");
+      console.error(`Usage: codetest --auth ${judge.name.toLowerCase()} <username> <password>`);
       process.exit(1);
     }
-    config.setJudgeCredentials("pesho", { username, password });
-    console.log("✅ Pesho credentials saved");
+    config.setJudgeCredentials(judge.name.toLowerCase(), { username, password });
+    console.log(`   ${judge.name} credentials saved`);
   } else if (judge.isAutomatedAuth()) {
     const cred = await judge.authenticateInteractive!();
     config.setJudgeCredentials(judge.name, cred);

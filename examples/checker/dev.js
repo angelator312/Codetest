@@ -1,5 +1,4 @@
 /// <reference path="../types/index.d.ts" />
-import { diffLines } from "diff";
 import { readFileSync } from "fs";
 const getExtensionRegex = /\.[^.]+$/;
 

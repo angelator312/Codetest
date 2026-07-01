@@ -2,6 +2,7 @@ import { ArenaJudge } from "./ArenaJudge.ts";
 import { PeshoJudge } from "./PeshoJudge.ts";
 import { LibraryCJudge } from "./LibraryCJudge.ts";
 import { CSESJudge } from "./CSESJudge.ts";
+import { CertJudge } from "./CertJudge.ts";
 import { Judge } from "./BaseJudge.ts";
 
 class JudgeRegistry {
@@ -18,6 +19,7 @@ class JudgeRegistry {
     this.register(new PeshoJudge());
     this.register(new LibraryCJudge());
     this.register(new CSESJudge());
+    this.register(new CertJudge());
   }
 
   register(judge: Judge): void {
