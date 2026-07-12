@@ -167,6 +167,7 @@ export function Test(
     }
     SetOutput(outputFileName); // reopen output file
   } catch (e) {
+    console.error(e.message);
     console.error(
       "Test failed " + solFileName + " " + outFileName + " " + outputFileName,
     );
@@ -231,6 +232,9 @@ export function NextCase(): boolean {
   return r;
 }
 
+export function globSyncMine(something: string): string[] {
+  return globSync(something);
+}
 export function ListInputFiles(dirName: string): string[] {
   return globSync(`${dirName}**/*.in`);
 }
@@ -276,7 +280,7 @@ export function TestSol(
     console.log(chalk.green("Test passed for: " + fileName));
   } catch (e) {
     if (e instanceof DiffError) {
-      console.log(e.message)
+      console.log(e.message);
       console.error(chalk.red("Test failed for: " + fileName));
     } else {
       console.error(chalk.red("Failed comparing output to solution: "));

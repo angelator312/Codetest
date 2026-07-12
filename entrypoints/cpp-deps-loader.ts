@@ -3,7 +3,7 @@ import type { ConfigType } from "../lib/Config.ts";
 
 let cppFiles: string[] = [];
 
-const MUST_RETURN_ITERABLE = new Set(["ListInputFiles", "GenericPermutation"]);
+const MUST_RETURN_ITERABLE = new Set(["ListInputFiles", "GenericPermutation","globSyncMine"]);
 
 const LEAVE_AS_IS = new Set(["SetConfig", "ListSomeFiles"]);
 
