@@ -127,7 +127,7 @@ function initializeDefaultCommands(): void {
       console.log(chalk.cyan("Sending code for evaluation..."));
       // Use the provided filename
       if (cmdFilename) {
-        await SubmitCode(cmdFilename);
+        await SubmitCode(cmdFilename,{openBrowser:!args.includes("nbr")});
       } else {
         console.log(chalk.red("No file to submit"));
       }
