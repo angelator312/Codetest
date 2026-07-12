@@ -46,6 +46,9 @@ Options can be specified in any order.
 - **--verbose** - verbose output
 - **--keep-input** - After successful test, preserve the input file
 - **--watch** - Watch test file and rerun automatically on change
+- **--export-types [file]** - exports all types into the *file*
+- **--get-dev** - Copy `npmdir/stdTest/dev.js` to `./dev.js` 
+- **--auth** - Auth one of the judges
 
 ### Parameters
 

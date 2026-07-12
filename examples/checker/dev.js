@@ -14,7 +14,7 @@ function checker(file1, file2, errFileName) {
   const f1 = parseInt(GetFileAsArrayOfNumbers(file1)[0], 10);
   const f2 = parseInt(GetFileAsArrayOfNumbers(file2, "utf8")[0], 10);
 
-  const hasDiff = (f1 != f2);
+  const hasDiff = f1 != f2;
   if (hasDiff) {
     if (errFileName) process.stderr.write(readFileSync(errFileName).toString());
     console.log("The difference between the two is:", f1 - f2);
