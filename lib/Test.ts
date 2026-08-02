@@ -55,7 +55,7 @@ function compileCommand(key: string, cppFile: string): Record<string, string> {
     });
   } catch (e) {
     const error = e as Error;
-    console.error(error.message);
+    console.error("Compile error:", error.message);
     Fail(`Failed to compile ${cppFile}`);
   }
   return { [key]: command };
