@@ -33,6 +33,7 @@
     ".old/**/*",
     "examples/**/*",
     "stdTest/**/*",
-    "types/*"
+    "types/*",
+    "web/*"
   ]
 }
