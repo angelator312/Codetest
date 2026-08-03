@@ -150,6 +150,21 @@ const configFromScript: TestScriptConfig = {
 
 let childProcess: ChildProcess | undefined;
 
+// Cleanup on exit
+const cleanExit = () => {
+  console.log('Cleaning up child processes...');
+  try {
+    childProcess.kill('SIGKILL');
+  } catch (e) {
+    /* ignore if already dead */
+  }
+  process.exit();
+};
+
+// Catch termination signals
+process.on('SIGTERM', cleanExit);
+process.on('SIGINT', cleanExit);
+
 // Always run the first time
 const exitCode = await runTest();
 
