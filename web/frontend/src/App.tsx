@@ -7,7 +7,7 @@ function App() {
   const [params, setParams] = useState<{ variable: string, range: [number, number] }[]>([{ variable: "N", range: [1, 100] }, { variable: "N", range: [1, 100] }]);
   return (
     <MantineProvider>
-      <Splitter style={{ height: "100%", width: "100%", flex: 1 }}>
+      <Splitter style={{ height: "100%", width: "100%", flex: 1 }} ml="sm">
         <Splitter.Pane defaultSize={50}>
           <Tabs defaultValue={"params"}>
             <Tabs.List>
@@ -35,12 +35,22 @@ function App() {
                     >
                       <Group grow preventGrowOverflow={false}>
 
-                        <TextInput style={{ flex: "0 0 5ch" }} defaultValue={e.variable} />
+                        <TextInput style={{ flex: "0 0 10ch" }} value={e.variable} onChange={(ev) => {
+                          let pars = [...params];
+                          pars[i].variable = ev.currentTarget.value;
+                          setParams(pars)
+                          console.log(pars)
+                        }} variant="filled" />
                         :
                         <RangeSlider
                           color="blue"
-                          defaultValue={e.range}
+                          value={e.range}
                           max={500}
+                          onChange={(range) => {
+                            const pars = [...params]
+                            pars[i].range = range
+                            setParams(pars)
+                          }}
                         />
                       </Group>
                     </div>
