@@ -1,11 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Sse } from '@nestjs/common';
 import { RunService } from './run.service';
 
 @Controller('run')
 export class RunController {
     constructor(private readonly runService: RunService) { }
 
-    @Get("runTest")
+    @Sse("runTest")
     async runTest(@Query("id") projectId: string) {
         return await this.runService.runTest(projectId);
     }

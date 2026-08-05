@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ChildProcess, spawn } from 'child_process';
+import { Observable } from 'rxjs';
 import { FilesService } from 'src/files/files.service';
+
 @Injectable()
 export class RunService {
     constructor(private readonly fileService: FilesService) { }
@@ -20,9 +22,9 @@ export class RunService {
         });
     }
 
-    async runTest(projectId: string): Promise<number> {
+    async runTest(projectId: string): Promise<Observable<{ data: { out?: string; err?: string; code?: number | null } }>> {
         try {
-            const childProcess = this.childProcesses[projectId];
+            let childProcess = this.childProcesses[projectId];
             const { jsFile, cppFile, args: argus, flags } = await this.fileService.loadParameters(projectId);
             if (childProcess && childProcess.exitCode === null) {
                 console.log(`Killing ${childProcess.pid}`);
@@ -34,18 +36,27 @@ export class RunService {
                 `>>> ${"Running"} ${jsFile} ${args}`,
             );
 
-            this.childProcesses[projectId] = spawn(
+            childProcess = this.childProcesses[projectId] = spawn(
                 "codetest",
                 [jsFile, `CPP=${cppFile}`, ...args, ...flags],
                 {
-                    stdio: "inherit", //TODO: make it with pipe and SSE
+                    stdio: "pipe",
                     cwd: this.fileService.getProjectPath(projectId),
                 },
             );
-            // console.log(
-            //     `>>> ${testScriptPath} exited with code ${code === 0 ? chalk.green(code.toString()) : chalk.red(code?.toString())}`,
-            // );
-            return 0;
+            return new Observable((subscriber) => {
+                childProcess.stdout?.on('data', (data) => {
+                    subscriber.next({data: {out: data.toString()}});
+                });
+                childProcess.stderr?.on('data', (data) => {
+                    subscriber.next({data: {err: data.toString()}});
+                });
+                childProcess.on('exit', (code) => {
+                    subscriber.next({data: {code}});
+                    console.log(`Process exited with code ${code}`);
+                    subscriber.complete();
+                });
+            });
         } catch (e) {
             console.error("Error running test:");
             console.error(e);
@@ -58,4 +69,3 @@ export class RunService {
         if (this.childProcesses[projectId]) this.childProcesses[projectId].kill();
     }
 }
-
