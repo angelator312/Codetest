@@ -3,8 +3,9 @@ import './App.css'
 import { Button, Center, CloseButton, Flex, Group, Input, MantineProvider, RangeSlider, Space, Splitter, Stack, Switch, Tabs, TextInput } from '@mantine/core'
 import '@mantine/core/styles.css';
 import type { Params } from './types';
+import { RunLog } from './RunLog';
 function App() {
-  const [count, setCount] = useState(0)
+  const [runId, setRunId] = useState(0);
   const [params, setParams] = useState<{ variable: string, range: [number, number] }[]>([{ variable: "N", range: [1, 100] }, { variable: "M", range: [1, 20] }]);
   const [verbose, setVerbose] = useState(false);
   const [cppFile, setCppFile] = useState("");
@@ -32,7 +33,7 @@ function App() {
               <Tabs.Tab value="params" >
                 Parameters
               </Tabs.Tab>
-              <Button>
+              <Button onClick={() => setRunId((prev) => prev + 1)}>
                 Run
               </Button>
             </Tabs.List>
@@ -95,19 +96,7 @@ function App() {
           </Tabs>
         </Splitter.Pane>
         <Splitter.Pane defaultSize={50} bg="teal">
-          <div>
-            <h1>WIP</h1>
-            <p>
-              Nothing done <code>src/App.tsx</code> and save to test <code>HMR</code>
-            </p>
-          </div>
-          <button
-            type="button"
-            className="counter"
-            onClick={() => setCount((count) => count + 1)}
-          >
-            Count is {count}
-          </button>
+          <RunLog projectId="556" runId={runId} />
         </Splitter.Pane>
       </Splitter>
     </MantineProvider>
