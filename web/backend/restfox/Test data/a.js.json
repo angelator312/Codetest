@@ -3,9 +3,9 @@
     "method": "POST",
     "body": {
         "mimeType": "text/plain",
-        "text": "#haha"
+        "text": "/// <reference path=\"../../types/index.d.ts\" />\nSetOutput(\"test.in\");\nSetCpp(\"a-slow.cpp\", \"a.cpp\");\n\nwhile (NextCase()) {\n  Int(N); Eol();\n  Int(M); Eol();\n  Test();\n}"
     },
-    "url": "http://localhost:3000/files/saveFile?id=556&fileName=test",
+    "url": "http://localhost:3000/files/saveFile?id=556&fileName=a.js",
     "sortOrder": 3,
     "parameters": [
         {
@@ -14,7 +14,7 @@
         },
         {
             "name": "fileName",
-            "value": "test"
+            "value": "a.js"
         }
     ],
     "pathParameters": [],

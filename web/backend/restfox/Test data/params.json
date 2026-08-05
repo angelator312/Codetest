@@ -3,18 +3,14 @@
     "method": "POST",
     "body": {
         "mimeType": "text/plain",
-        "text": "#haha"
+        "text": "{\n    \"jsFile\": \"a.js\",\n    \"cppFile\": \"a.cpp\",\n    \"args\": {\n        \"N\": \"1..10\",\n        \"M\": \"2..10\",\n        \"T\": \"1\"\n    },\n    \"flags\": [\n        \"--verbose\"\n    ]\n}"
     },
-    "url": "http://localhost:3000/files/saveFile?id=556&fileName=test",
-    "sortOrder": 3,
+    "url": "http://localhost:3000/files/saveParameters?id=556",
+    "sortOrder": 0,
     "parameters": [
         {
             "name": "id",
             "value": "556"
-        },
-        {
-            "name": "fileName",
-            "value": "test"
         }
     ],
     "pathParameters": [],

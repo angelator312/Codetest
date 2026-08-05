@@ -6,7 +6,7 @@
         "text": "testy"
     },
     "url": "http://localhost:3000/files/loadFile?id=556&fileName=test",
-    "sortOrder": 4,
+    "sortOrder": 6,
     "parameters": [
         {
             "name": "id",
