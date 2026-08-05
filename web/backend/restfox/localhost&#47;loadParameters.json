@@ -1,0 +1,22 @@
+{
+    "_type": "request",
+    "method": "GET",
+    "body": {
+        "mimeType": "No Body",
+        "text": "testy"
+    },
+    "url": "http://localhost:3000/files/loadParameters?id=556&fileName=test",
+    "sortOrder": 5,
+    "parameters": [
+        {
+            "name": "id",
+            "value": "556"
+        },
+        {
+            "name": "fileName",
+            "value": "test"
+        }
+    ],
+    "pathParameters": [],
+    "headers": []
+}

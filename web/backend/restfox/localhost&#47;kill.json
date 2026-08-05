@@ -1,0 +1,16 @@
+{
+    "_type": "request",
+    "method": "GET",
+    "body": {
+        "mimeType": "No Body"
+    },
+    "url": "http://localhost:3000/run/kill?id=556",
+    "sortOrder": 1,
+    "parameters": [
+        {
+            "name": "id",
+            "value": "556"
+        }
+    ],
+    "pathParameters": []
+}

@@ -1,0 +1,23 @@
+{
+    "_type": "request",
+    "method": "POST",
+    "body": {
+        "mimeType": "text/plain",
+        "text": "{\n    \"jsFile\": \"a.js\",\n    \"cppFile\": \"a.cpp\",\n    \"args\": {\n        \"N\": \"1..10\",\n        \"M\": \"2..10\",\n        \"T\": \"1\"\n    },\n    \"flags\": [\n        \"--verbose\"\n    ]\n}"
+    },
+    "url": "http://localhost:3000/files/saveParameters?id=556",
+    "sortOrder": 3,
+    "parameters": [
+        {
+            "name": "id",
+            "value": "556"
+        }
+    ],
+    "pathParameters": [],
+    "headers": [
+        {
+            "name": "Content-Type",
+            "value": "text/plain"
+        }
+    ]
+}

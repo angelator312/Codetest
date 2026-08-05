@@ -1,0 +1,27 @@
+{
+    "_type": "request",
+    "method": "POST",
+    "body": {
+        "mimeType": "text/plain",
+        "text": "#haha"
+    },
+    "url": "http://localhost:3000/files/saveFile?id=556&fileName=test",
+    "sortOrder": 2,
+    "parameters": [
+        {
+            "name": "id",
+            "value": "556"
+        },
+        {
+            "name": "fileName",
+            "value": "test"
+        }
+    ],
+    "pathParameters": [],
+    "headers": [
+        {
+            "name": "Content-Type",
+            "value": "text/plain"
+        }
+    ]
+}
