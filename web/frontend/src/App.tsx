@@ -1,10 +1,22 @@
 import { useState } from 'react'
 import './App.css'
-import { Button, Flex, Group, Input, MantineProvider, RangeSlider, Splitter, Stack, Switch, Tabs, TextInput } from '@mantine/core'
+import { Button, Center, CloseButton, Flex, Group, Input, MantineProvider, RangeSlider, Space, Splitter, Stack, Switch, Tabs, TextInput } from '@mantine/core'
 import '@mantine/core/styles.css';
+import type { Params } from './types';
 function App() {
   const [count, setCount] = useState(0)
-  const [params, setParams] = useState<{ variable: string, range: [number, number] }[]>([{ variable: "N", range: [1, 100] }, { variable: "N", range: [1, 100] }]);
+  const [params, setParams] = useState<{ variable: string, range: [number, number] }[]>([{ variable: "N", range: [1, 100] }, { variable: "M", range: [1, 20] }]);
+  const [verbose, setVerbose] = useState(false);
+  const [cppFile, setCppFile] = useState("");
+  const [jsFile, setJsFile] = useState("");
+  const createJSON = () => {
+    let json: Params = { flags: [], jsFile, cppFile, args: {} };
+    for (const { variable, range } of params) {
+      json.args[variable] = `${range[0]}..${range[1]}`;
+    }
+    if (verbose) json.flags = ["--verbose"];
+    return json;
+  }
   return (
     <MantineProvider>
       <Splitter style={{ height: "100%", width: "100%", flex: 1 }} ml="sm">
@@ -25,9 +37,18 @@ function App() {
               </Button>
             </Tabs.List>
             <Tabs.Panel value='params'>
+              <Space h="sm" />
               <Stack>
-                <TextInput label="cppFile" />
-                <TextInput label="jsFile" />
+                <Group grow>
+                  CPP file:
+                  <TextInput value={cppFile}
+                    onChange={(event) => setCppFile(event.currentTarget.value)} />
+                </Group>
+                <Group grow>
+                  JS file:
+                  <TextInput value={jsFile}
+                    onChange={(event) => setJsFile(event.currentTarget.value)} />
+                </Group>
                 <Stack>
                   {params.map((e, i) => (
                     <div
@@ -39,7 +60,6 @@ function App() {
                           let pars = [...params];
                           pars[i].variable = ev.currentTarget.value;
                           setParams(pars)
-                          console.log(pars)
                         }} variant="filled" />
                         :
                         <RangeSlider
@@ -52,15 +72,23 @@ function App() {
                             setParams(pars)
                           }}
                         />
+                        <CloseButton style={{ flex: "0 0 2ch" }} onClick={() => setParams((e2) => { e2.splice(i, 1); return [...e2]; })} />
                       </Group>
                     </div>
                   ))}
-                  <Button onClick={() => {
-                    console.log(params, params.concat({ range: [1, 10], variable: "HMM" }))
-                    setParams(params.concat([{ range: [1, 10], variable: "HMM" }]))
-                  }
-                  }>Add params</Button>
-                  <Switch label="verbose output?" name='verbose' />
+                  <Center>
+                    <Button onClick={() => {
+                      setParams(params.concat([{ range: [1, 10], variable: "HMM" }]))
+                    }
+                    }>Add params</Button>
+                  </Center>
+                  <Switch label="verbose output?" name='verbose' checked={verbose}
+                    onChange={(event) => setVerbose(event.currentTarget.checked)} />
+                  <Center>
+                    <Button onClick={() => console.log(createJSON())}>
+                      Save
+                    </Button>
+                  </Center>
                 </Stack>
               </Stack>
             </Tabs.Panel>
