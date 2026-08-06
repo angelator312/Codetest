@@ -25,7 +25,9 @@ export class FilesService {
     }
     async loadParameters(projectId: string): Promise<Params> {
         const a=JSON.parse(await this.loadFile(projectId, "parameters.json"));
-        console.log(a)
         return a;
+    }
+    async listFiles(projectId:string){
+        return fs.readdir(this.getProjectPath(projectId));
     }
 }

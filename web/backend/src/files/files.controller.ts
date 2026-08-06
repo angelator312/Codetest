@@ -21,4 +21,8 @@ export class FilesController {
     async loadParameters(@Query("id") projectId: string) {
         return await this.fileService.loadParameters(projectId);
     }
+    @Get("listFiles")
+    async listFiles(@Query("id") projectId: string) {
+        return await this.fileService.listFiles(projectId);
+    }
 }
