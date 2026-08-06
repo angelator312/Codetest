@@ -15,6 +15,18 @@ export function ParamsTab({ projectId }: { projectId: string }) {
         if (verbose) json.flags = ["--verbose"];
         return json;
     }
+    const saveParams = () => {
+        const a = async () => {
+            await fetch('/files/saveParameters?id=556', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                body: JSON.stringify(createJSON())
+            });
+        };
+        a();
+    }
     useEffect(() => {
         const a = async () => {
             const response = await fetch('/files/loadParameters?id=556', {
@@ -86,7 +98,7 @@ export function ParamsTab({ projectId }: { projectId: string }) {
                     <Switch label="verbose output?" name='verbose' checked={verbose}
                         onChange={(event) => setVerbose(event.currentTarget.checked)} />
                     <Center>
-                        <Button onClick={() => console.log(createJSON())}>
+                        <Button onClick={() => { console.log(createJSON()); saveParams() }}>
                             Save
                         </Button>
                     </Center>
