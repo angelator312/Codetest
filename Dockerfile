@@ -19,4 +19,5 @@ WORKDIR /app/web/backend
 RUN npm install
 RUN npm run build
 
+VOLUME [ "/app/web/backend/projects" ]
 CMD ["node", "dist/main"]
