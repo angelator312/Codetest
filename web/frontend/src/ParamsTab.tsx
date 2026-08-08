@@ -17,7 +17,7 @@ export function ParamsTab({ projectId }: { projectId: string }) {
     }
     const saveParams = () => {
         const a = async () => {
-            await fetch('/files/saveParameters?id=556', {
+            await fetch(`/files/saveParameters?id=${projectId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/plain',
@@ -29,7 +29,7 @@ export function ParamsTab({ projectId }: { projectId: string }) {
     }
     useEffect(() => {
         const a = async () => {
-            const response = await fetch('/files/loadParameters?id=556', {
+            const response = await fetch(`/files/loadParameters?id=${projectId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

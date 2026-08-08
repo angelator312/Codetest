@@ -6,11 +6,12 @@ import { RunLog } from './RunLog';
 import { ParamsTab } from './ParamsTab';
 import { FileView } from './FileView';
 function App() {
+  const projectId = new URLSearchParams(window.location.search).get("projectId")||"";
   const [runId, setRunId] = useState(0);
   const [files, setFiles] = useState<string[]>([]);
   useEffect(() => {
     (async () => {
-      const response = await fetch('/files/listFiles?id=556', {
+      const response = await fetch(`/files/listFiles?id=${projectId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'text/plain',
@@ -53,17 +54,17 @@ function App() {
               }
             </Tabs.List>
             <Tabs.Panel value='params'>
-              <ParamsTab projectId='556' />
+              <ParamsTab projectId={projectId} />
             </Tabs.Panel>
             {files.map((e, i) => (
               <Tabs.Panel value={e} key={e}>
-                <FileView projectId="556" fileName={e} />
+                <FileView projectId={projectId} fileName={e} />
               </Tabs.Panel>))
             }
           </Tabs>
         </Splitter.Pane>
         <Splitter.Pane defaultSize={50} bg="teal">
-          <RunLog projectId="556" runId={runId} />
+          <RunLog projectId={projectId} runId={runId} />
         </Splitter.Pane>
       </Splitter>
     </MantineProvider>
