@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { Button, MantineProvider, Splitter, Tabs, TextInput } from '@mantine/core'
+import { Button, Group, MantineProvider, Modal, Splitter, Tabs, TextInput } from '@mantine/core'
 import '@mantine/core/styles.css';
 import { RunLog } from './RunLog';
 import { ParamsTab } from './ParamsTab';
 import { FileView } from './FileView';
+import { useDisclosure } from '@mantine/hooks';
 function App() {
   const projectId = new URLSearchParams(window.location.search).get("projectId") || "";
   const [runId, setRunId] = useState(0);
   const [files, setFiles] = useState<string[]>([]);
+  const [newFileName, setNewFileName] = useState<string>("");
   const [renameId, setRenameId] = useState(0);
+  const [openedModal, { open: openModal, close: closeModal }] = useDisclosure(false);
   useEffect(() => {
     (async () => {
       const response = await fetch(`/files/listFiles?id=${projectId}`, {
@@ -38,6 +41,14 @@ function App() {
     <MantineProvider>
       <Splitter style={{ height: "100%", width: "100%", flex: 1 }} ml="sm">
         <Splitter.Pane defaultSize={50}>
+          <Modal opened={openedModal} onClose={closeModal} title="New file">
+            <Group>
+              <TextInput value={newFileName} onChange={(e) => setNewFileName(e.currentTarget.value)} />
+              <Button size="sm" onClick={(e) => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => closeModal())}
+              >Create</Button>
+            </Group>
+          </Modal>
+
           <Tabs defaultValue={"params"}>
             <Tabs.List>
               <Tabs.Tab value="params" >
@@ -46,14 +57,14 @@ function App() {
               <Button onClick={() => setRunId((prev) => prev + 1)}>
                 Run
               </Button>
-              <Button onClick={() => { }}>
+              <Button onClick={openModal}>
                 New file
               </Button>
               {files.map((e, i) => (
                 <Tabs.Tab value={e} key={e}>
-                  <TextInput defaultValue={e} size="xs" style={{ padding: 0, width: (e.length + 1.5) + "ch" }} onKeyDown={(e2) => {
+                  <TextInput inputSize={(e.trim().length/1.5).toString()} defaultValue={e} onKeyDown={(e2) => {
                     if (e2.code == "Enter") {
-                      const newF = e2.currentTarget.value;
+                       const newF = e2.currentTarget.value;
                       console.log("Rename", e, newF)
                       if (e == newF) return;
                       fetch(`/files/renameFile?id=${projectId}&fileName=${e}&newFileName=${newF}`, { method: "POST" }).then(() =>
@@ -78,7 +89,7 @@ function App() {
           <RunLog projectId={projectId} runId={runId} />
         </Splitter.Pane>
       </Splitter>
-    </MantineProvider>
+    </MantineProvider >
   )
 }
 
