@@ -16,7 +16,7 @@ export function FileView({ projectId, fileName }: { projectId: string, fileName:
         })();
     }, []);
     const saveJSON = async () => {
-        const response = await fetch(`/files/saveFile?id=${projectId}&fileName=${fileName}`, {
+        await fetch(`/files/saveFile?id=${projectId}&fileName=${fileName}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/plain',

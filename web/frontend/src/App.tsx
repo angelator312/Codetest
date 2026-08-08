@@ -44,7 +44,7 @@ function App() {
           <Modal opened={openedModal} onClose={closeModal} title="New file">
             <Group>
               <TextInput value={newFileName} onChange={(e) => setNewFileName(e.currentTarget.value)} />
-              <Button size="sm" onClick={(e) => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => closeModal())}
+              <Button size="sm" onClick={() => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => closeModal())}
               >Create</Button>
             </Group>
           </Modal>
@@ -60,7 +60,7 @@ function App() {
               <Button onClick={openModal}>
                 New file
               </Button>
-              {files.map((e, i) => (
+              {files.map((e) => (
                 <Tabs.Tab value={e} key={e}>
                   <TextInput inputSize={(e.trim().length/1.5).toString()} defaultValue={e} onKeyDown={(e2) => {
                     if (e2.code == "Enter") {
@@ -78,7 +78,7 @@ function App() {
             <Tabs.Panel value='params'>
               <ParamsTab projectId={projectId} />
             </Tabs.Panel>
-            {files.map((e, i) => (
+            {files.map((e) => (
               <Tabs.Panel value={e} key={e}>
                 <FileView projectId={projectId} fileName={e} />
               </Tabs.Panel>))
