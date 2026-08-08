@@ -25,4 +25,9 @@ export class FilesController {
     async listFiles(@Query("id") projectId: string) {
         return await this.fileService.listFiles(projectId);
     }
+    @Post("renameFile")
+    async renameFile(@Query("id") projectId: string, @Query("fileName") fileName: string, @Query("newFileName") newFileName: string) {
+        console.log(projectId, fileName, newFileName)
+        await this.fileService.renameFile(projectId, fileName, newFileName);
+    }
 }

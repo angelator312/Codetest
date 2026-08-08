@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { Button, MantineProvider, Splitter, Tabs } from '@mantine/core'
+import { Button, MantineProvider, Splitter, Tabs, TextInput } from '@mantine/core'
 import '@mantine/core/styles.css';
 import { RunLog } from './RunLog';
 import { ParamsTab } from './ParamsTab';
 import { FileView } from './FileView';
 function App() {
-  const projectId = new URLSearchParams(window.location.search).get("projectId")||"";
+  const projectId = new URLSearchParams(window.location.search).get("projectId") || "";
   const [runId, setRunId] = useState(0);
   const [files, setFiles] = useState<string[]>([]);
+  const [renameId, setRenameId] = useState(0);
   useEffect(() => {
     (async () => {
       const response = await fetch(`/files/listFiles?id=${projectId}`, {
@@ -18,10 +19,8 @@ function App() {
         },
       });
       const data: string[] = await response.json();
-      const a = data.filter((e) => !e.endsWith(".exe"));
+      const a = data.filter((e) => !e.endsWith(".exe")).filter(e => e != "parameters.json");
       const b = a.sort((a, b) => {
-        if (a == "parameters.json") return -1;
-        if (b == "parameters.json") return 1;
         let extA = a.split(".").pop();
         let extB = b.split(".").pop();
         if (extA == extB) return a == b ? 0 : (a < b ? -1 : 1);
@@ -34,7 +33,7 @@ function App() {
       setFiles(b)
       console.log(b)
     })();
-  }, [])
+  }, [renameId])
   return (
     <MantineProvider>
       <Splitter style={{ height: "100%", width: "100%", flex: 1 }} ml="sm">
@@ -47,9 +46,21 @@ function App() {
               <Button onClick={() => setRunId((prev) => prev + 1)}>
                 Run
               </Button>
+              <Button onClick={() => { }}>
+                New file
+              </Button>
               {files.map((e, i) => (
                 <Tabs.Tab value={e} key={e}>
-                  {e}
+                  <TextInput defaultValue={e} size="xs" style={{ padding: 0, width: (e.length + 1.5) + "ch" }} onKeyDown={(e2) => {
+                    if (e2.code == "Enter") {
+                      const newF = e2.currentTarget.value;
+                      console.log("Rename", e, newF)
+                      if (e == newF) return;
+                      fetch(`/files/renameFile?id=${projectId}&fileName=${e}&newFileName=${newF}`, { method: "POST" }).then(() =>
+                        setRenameId(renameId + 1)
+                      )
+                    }
+                  }} />
                 </Tabs.Tab>))
               }
             </Tabs.List>

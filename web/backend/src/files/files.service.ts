@@ -37,4 +37,8 @@ export class FilesService {
         await fs.mkdir(dirPath, { recursive: true })
         return fs.readdir(dirPath);
     }
+    async renameFile(projectId: string, orgFile: string, newFile: string) {
+        const dirPath = this.getProjectPath(projectId);
+        await fs.rename(join(dirPath, orgFile), join(dirPath, newFile));
+    }
 }
