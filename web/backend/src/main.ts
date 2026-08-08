@@ -8,6 +8,9 @@ async function bootstrap() {
 });
 app.useBodyParser('text');
 
+  // Starts listening for shutdown hooks
+  app.enableShutdownHooks();
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

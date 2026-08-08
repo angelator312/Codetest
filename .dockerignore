@@ -1,0 +1,13 @@
+*.out
+*.exe
+node_modules
+.debug
+*.err
+
+dist
+
+.git
+
+web/backend/node_modules
+web/frontend/node_modules
+
