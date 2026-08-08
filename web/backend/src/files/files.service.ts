@@ -18,16 +18,23 @@ export class FilesService {
         const dirPath = this.getProjectPath(projectId);
         // await fs.mkdir(dirPath)
         const filePath = join(dirPath, name);
-        return (await fs.readFile(filePath)).toString();
+        try {
+            return (await fs.readFile(filePath)).toString();
+        } catch (e) {
+            return "";
+        }
     }
     async saveParameters(projectId: string, content: string) {
         await this.saveFile(projectId, "parameters.json", content)
     }
     async loadParameters(projectId: string): Promise<Params> {
-        const a=JSON.parse(await this.loadFile(projectId, "parameters.json"));
-        return a;
+        let file = await this.loadFile(projectId, "parameters.json");
+        if (file.trim() == "") file = "{}"
+        const a = JSON.parse(file); return a;
     }
-    async listFiles(projectId:string){
-        return fs.readdir(this.getProjectPath(projectId));
+    async listFiles(projectId: string) {
+        const dirPath = this.getProjectPath(projectId);
+        await fs.mkdir(dirPath, { recursive: true })
+        return fs.readdir(dirPath);
     }
 }
