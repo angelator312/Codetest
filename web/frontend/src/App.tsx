@@ -44,7 +44,7 @@ function App() {
           <Modal opened={openedModal} onClose={closeModal} title="New file">
             <Group>
               <TextInput value={newFileName} onChange={(e) => setNewFileName(e.currentTarget.value)} />
-              <Button size="sm" onClick={() => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => closeModal())}
+              <Button size="sm" onClick={() => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => { closeModal(); setRenameId(renameId + 1) })}
               >Create</Button>
             </Group>
           </Modal>
@@ -62,9 +62,9 @@ function App() {
               </Button>
               {files.map((e) => (
                 <Tabs.Tab value={e} key={e}>
-                  <TextInput inputSize={(e.trim().length/1.5).toString()} defaultValue={e} onKeyDown={(e2) => {
+                  <TextInput inputSize={(e.trim().length / 1.5).toString()} defaultValue={e} onKeyDown={(e2) => {
                     if (e2.code == "Enter") {
-                       const newF = e2.currentTarget.value;
+                      const newF = e2.currentTarget.value;
                       console.log("Rename", e, newF)
                       if (e == newF) return;
                       fetch(`/files/renameFile?id=${projectId}&fileName=${e}&newFileName=${newF}`, { method: "POST" }).then(() =>
