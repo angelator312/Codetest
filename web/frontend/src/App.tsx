@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { Button, Group, MantineProvider, Modal, Splitter, Tabs, TextInput } from '@mantine/core'
+import { Button, Group, MantineProvider, Modal, Select, Splitter, Tabs, TextInput } from '@mantine/core'
 import '@mantine/core/styles.css';
 import { RunLog } from './RunLog';
 import { ParamsTab } from './ParamsTab';
 import { FileView } from './FileView';
 import { useDisclosure } from '@mantine/hooks';
+import devJS1 from './templates/dev.js?raw';
+const templates: Record<string, string> = {
+  "dev.js": devJS1,
+  "none": "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
+}
 function App() {
   const projectId = new URLSearchParams(window.location.search).get("projectId") || "";
   const [runId, setRunId] = useState(0);
   const [files, setFiles] = useState<string[]>([]);
   const [newFileName, setNewFileName] = useState<string>("");
   const [renameId, setRenameId] = useState(0);
+  const [templateId, setTemplateId] = useState("none");
   const [openedModal, { open: openModal, close: closeModal }] = useDisclosure(false);
   useEffect(() => {
     (async () => {
@@ -44,7 +50,19 @@ function App() {
           <Modal opened={openedModal} onClose={closeModal} title="New file">
             <Group>
               <TextInput value={newFileName} onChange={(e) => setNewFileName(e.currentTarget.value)} />
-              <Button size="sm" onClick={() => fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: "Lorem ipsum dolor sit amet consectetur adipiscing elit." }).then(() => { closeModal(); setRenameId(renameId + 1) })}
+              <Select
+                label="Your favorite library"
+                placeholder="Pick value"
+                data={Object.keys(templates)}
+                onChange={(c) => setTemplateId(c ?? "none")}
+                searchable
+                nothingFoundMessage="Nothing found..."
+              />
+              <Button size="sm" onClick={() => {
+                fetch(`/files/saveFile?id=${projectId}&fileName=${newFileName}`, { method: "POST", body: templates[templateId] }).then(() => { closeModal(); setRenameId(renameId + 1) })
+                setNewFileName("");
+                setTemplateId("none");
+              }}
               >Create</Button>
             </Group>
           </Modal>
