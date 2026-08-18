@@ -12,6 +12,7 @@
   "dependencies": {
     "@mantine/core": "^9.5.1",
     "@mantine/hooks": "^9.5.1",
+    "@monaco-editor/react": "^4.8.0-rc.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
