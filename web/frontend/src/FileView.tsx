@@ -1,4 +1,4 @@
-import { Button, Textarea } from "@mantine/core";
+import { Button } from "@mantine/core";
 import { useEffect, useState } from "react";
 import Editor from '@monaco-editor/react';
 
@@ -27,7 +27,7 @@ export function FileView({ projectId, fileName }: { projectId: string, fileName:
     };
     return (
         <>
-            <Editor language={fileName.endsWith(".js") ? "javascript" : "cpp"} height="60vh" loading={file == ""} value={file} onChange={(event) => setFile(event ?? "")}
+            <Editor language={fileName.endsWith(".js") ? "javascript" : (fileName.endsWith(".cpp") ? "cpp" : "txt")} height="60vh" loading={file == ""} value={file} onChange={(event) => setFile(event ?? "")}
             />
             <Button size="compact-sm" onClick={() => { saveJSON() }}>
                 Save
